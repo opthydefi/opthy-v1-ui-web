@@ -1,25 +1,46 @@
 import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import { BrowserRouter } from 'react-router-dom';
+import { createBrowserHistory } from 'history';
+import { create } from 'jss';
+import rtl from 'jss-rtl';
+import jssPreset from "@mui/styles/jssPreset"
+import StylesProvider from "@mui/styles/StylesProvider";
+import AdapterDateFns from "@mui/lab/AdapterDateFns";
+import LocalizationProvider from "@mui/lab/LocalizationProvider";
+import { ThemeProvider } from './contexts/ThemeContext';
+import GlobalStyles from 'src/components/GlobalStyles';
+import routes, { renderRoutes } from 'src/routes';
+
+import { EthereumProvider } from 'src/contexts/EthereumContext';
+
+
+const jss = create({ plugins: [...jssPreset().plugins, rtl()] });
+
+
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <ThemeProvider>
+      <EthereumProvider>
+
+        <StylesProvider jss={jss}>
+          <LocalizationProvider dateAdapter={AdapterDateFns}>
+
+
+            <BrowserRouter>
+              <GlobalStyles />
+              {/* <Web3ReactProvider getLibrary={getLibrary}>
+              <Wallet />
+            </Web3ReactProvider> */}
+              {renderRoutes(routes)}
+            </BrowserRouter>
+
+
+          </LocalizationProvider>
+        </StylesProvider>
+
+      </EthereumProvider>
+    </ThemeProvider>
   );
 }
 
