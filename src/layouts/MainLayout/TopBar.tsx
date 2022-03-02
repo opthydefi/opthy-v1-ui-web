@@ -8,7 +8,7 @@ import makeStyles from '@mui/styles/makeStyles';
 // import Logo from 'src/components/Logo';
 import type { Theme } from "src/types/theme";
 import { useEthersState } from 'src/contexts/EthereumContext';
-
+import PersonIcon from '@mui/icons-material/Person';
 // import Register from 'src/components/modals/Register';
 
 
@@ -42,7 +42,7 @@ const useStyles = makeStyles((theme: Theme) => ({
 
 const TopBar: FC<TopBarProps> = ({ className, ...rest }) => {
   const classes = useStyles();
-  const { connectWallet } = useEthersState();
+  const { connectWallet, userCurrentAddress, isMetamaskInstall } = useEthersState();
 
   let history = useHistory();
   const [openRegisterButton, setOpenRegisterButton] = React.useState(false);
@@ -71,13 +71,23 @@ const TopBar: FC<TopBarProps> = ({ className, ...rest }) => {
           <Typography>Logo</Typography>
         </RouterLink>
         <Box flexGrow={1} />
-        <Button
-          color='primary'
-          variant='outlined'
-          onClick={connectWallet}
-        >
-          Login
-        </Button>
+        {isMetamaskInstall === true && userCurrentAddress !== '' && (
+          <>
+            <Button variant="outlined" startIcon={<PersonIcon />}>
+              Logged In
+            </Button>
+          </>
+        )}
+        {isMetamaskInstall === true && userCurrentAddress === '' && (
+          <Button
+            color='primary'
+            variant='outlined'
+            onClick={connectWallet}
+          >
+            Login
+          </Button>
+        )}
+
       </Toolbar>
 
     </AppBar>

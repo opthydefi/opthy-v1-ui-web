@@ -17,10 +17,9 @@ interface AppInitializeState {
     userCurrentAddress: string;
     userTransactions: any[];
     isWalletConnected: boolean;
-    provider: any;
 }
 
-interface EthereumContextValue extends AppInitializeState {
+interface ContractsContextValue extends AppInitializeState {
 
     connectWallet: (user: any) => Promise<void>;
 }
@@ -35,11 +34,10 @@ const initialAppState: AppInitializeState = {
     userCurrentAddress: '',
     userTransactions: [],
     isWalletConnected: false,
-    provider: null,
 };
 
 
-const EthereumContext = React.createContext<EthereumContextValue>({
+const ContractsContext = React.createContext<ContractsContextValue>({
     ...initialAppState,
     connectWallet: () => Promise.resolve(),
     // test: () => Promise.resolve(),
@@ -55,13 +53,6 @@ type InitializeAction = {
         isInitialized: boolean;
     };
 };
-
-type InitializeProvider = {
-    type: "SET_PROVIDER";
-    payload: {
-        provider: any;
-    }
-}
 
 type ChangeMetamaskAddress = {
     type: "CHANGE_METAMASK_ADDRESS",
@@ -85,7 +76,7 @@ type checkIsMetamaskInstall = {
     }
 }
 
-type Action = InitializeAction | ChangeMetamaskAddress | checkIsMetamaskInstall | ConnectWallet | InitializeProvider;
+type Action = InitializeAction | ChangeMetamaskAddress | checkIsMetamaskInstall | ConnectWallet;
 
 const stateReducer = (state: AppInitializeState, action: Action): AppInitializeState => {
     switch (action.type) {
@@ -111,13 +102,6 @@ const stateReducer = (state: AppInitializeState, action: Action): AppInitializeS
                 isWalletConnected
             }
         }
-        case "SET_PROVIDER": {
-            const { provider } = action.payload;
-            return {
-                ...state,
-                provider: provider
-            }
-        }
         default: {
             return { ...state };
         }
@@ -138,12 +122,6 @@ export const EthereumProvider: FC<EthereumProviderProps> = ({ children }) => {
         return transactionsContract;
     };
 
-    const initializeProvider = () => {
-        const provider = new ethers.providers.Web3Provider(ethereum);
-        const signer = provider.getSigner();
-        console.log(provider, signer, 'provider, signer')
-    }
-
 
     React.useEffect(() => {
         if (state.isInitialized === true) {
@@ -163,7 +141,6 @@ export const EthereumProvider: FC<EthereumProviderProps> = ({ children }) => {
                         isMetamaskInstall: true,
                     }
                 })
-                initializeProvider();
                 if (ethereum.selectedAddress) {
                     connectWallet();
                 }
@@ -257,16 +234,16 @@ export const EthereumProvider: FC<EthereumProviderProps> = ({ children }) => {
         return <InstallMetamask />
     }
 
-    return (<EthereumContext.Provider
+    return (<ContractsContext.Provider
         value={{
             ...state,
             connectWallet
         }}>
         {children}
-    </EthereumContext.Provider>)
+    </ContractsContext.Provider>)
 }
 
-export const useEthersState = () => useContext(EthereumContext);
+export const useContractsState = () => useContext(ContractsContext);
 
 
 
