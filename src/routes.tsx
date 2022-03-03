@@ -79,7 +79,7 @@ const routes: Routes = [
             {
                 exact: true,
                 path: '/',
-                component: BuyContract
+                component: Home
             },
             // {
             //   exact: true,
