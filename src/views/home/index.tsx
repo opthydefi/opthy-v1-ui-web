@@ -9,6 +9,7 @@ import { OpthyCard } from "src/components/Card";
 
 
 const Home: FC = () => {
+    // const getData = [{title: }]
     return (
         <Page title="Home page">
             <Box m={2}>
@@ -22,7 +23,8 @@ const Home: FC = () => {
             <Box m={2}>
                 <Grid container spacing={0}>
                     {/* Opthy card loop  */}
-                    <OpthyCard data={{ title: "test" }} />
+                    <OpthyCard data={{ title: "First Test" }} />
+                    <OpthyCard data={{ title: "Second Test" }} />
                     {/* Opthy card loop  */}
                 </Grid>
             </Box>
