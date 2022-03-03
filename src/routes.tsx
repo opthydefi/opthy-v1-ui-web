@@ -17,6 +17,7 @@ import Home from 'src/views/home';
 
 
 
+
 type Routes = {
     exact?: boolean;
     path?: string | string[];

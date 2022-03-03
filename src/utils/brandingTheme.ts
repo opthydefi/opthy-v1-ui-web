@@ -261,6 +261,7 @@ export const getDesignTokens = (mode: 'light' | 'dark') =>
     fontFamilyTagline: ['"PlusJakartaSans-ExtraBold"', ...systemFont].join(','),
     fontFamilySystem: systemFont.join(','),
     fontWeightExtraBold: 800,
+    color: mode === 'dark' ? grey[200] : blueDark[700],
     h1: {
       fontFamily: ['"PlusJakartaSans-ExtraBold"', ...systemFont].join(','),
       fontSize: 'clamp(2.625rem, 1.2857rem + 3.5714vw, 4rem)',
@@ -312,11 +313,13 @@ export const getDesignTokens = (mode: 'light' | 'dark') =>
       fontSize: defaultTheme.typography.pxToRem(16), // 16px
       lineHeight: 24 / 16,
       letterSpacing: 0,
+      color: mode === 'dark' ? grey[200] : blueDark[700],
     },
     body2: {
       fontSize: defaultTheme.typography.pxToRem(14), // 14px
       lineHeight: 21 / 14,
       letterSpacing: 0,
+      color: mode === 'dark' ? grey[200] : blueDark[700],
     },
     caption: {
       display: 'inline-block',
@@ -324,6 +327,7 @@ export const getDesignTokens = (mode: 'light' | 'dark') =>
       lineHeight: 18 / 12,
       letterSpacing: 0,
       fontWeight: 700,
+      color: mode === 'dark' ? grey[200] : blueDark[700],
     },
   },
 
