@@ -33,14 +33,6 @@ export const OpthyCard: FC<CardProps> = ({ data }: CardProps) => {
     return (
         <Card sx={{ maxWidth: 400, m: 1 }}>
                 <CardContent>
-                {/* <Typography variant="body2" color="text.secondary">
-                    Fixed Swap Rate: 
-                    <Box p={1}>
-                        <Typography gutterBottom variant="body2">1 BTC = 60k DAI</Typography>
-                        <Typography gutterBottom variant="body2">2 DAI = 0.001 BTC</Typography>
-                    </Box>
-                </Typography> */}
-                
                     <Box>
                         <Typography gutterBottom variant="h5" component="div">
                             BTC
