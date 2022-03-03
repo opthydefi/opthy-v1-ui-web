@@ -12,6 +12,8 @@ import GlobalStyles from 'src/components/GlobalStyles';
 import routes, { renderRoutes } from 'src/routes';
 
 import { EthereumProvider } from 'src/contexts/EthereumContext';
+import { ContractsProvider } from 'src/contexts/ContractsContexts';
+
 
 
 const jss = create({ plugins: [...jssPreset().plugins, rtl()] });
@@ -22,23 +24,23 @@ function App() {
   return (
     <ThemeProvider>
       <EthereumProvider>
+        <ContractsProvider>
+          <StylesProvider jss={jss}>
+            <LocalizationProvider dateAdapter={AdapterDateFns}>
 
-        <StylesProvider jss={jss}>
-          <LocalizationProvider dateAdapter={AdapterDateFns}>
 
-
-            <BrowserRouter>
-              <GlobalStyles />
-              {/* <Web3ReactProvider getLibrary={getLibrary}>
+              <BrowserRouter>
+                <GlobalStyles />
+                {/* <Web3ReactProvider getLibrary={getLibrary}>
               <Wallet />
             </Web3ReactProvider> */}
-              {renderRoutes(routes)}
-            </BrowserRouter>
+                {renderRoutes(routes)}
+              </BrowserRouter>
 
 
-          </LocalizationProvider>
-        </StylesProvider>
-
+            </LocalizationProvider>
+          </StylesProvider>
+        </ContractsProvider>
       </EthereumProvider>
     </ThemeProvider>
   );

@@ -23,6 +23,7 @@
     "@types/react": "^17.0.39",
     "@types/react-dom": "^17.0.11",
     "@types/react-router-dom": "^5.3.3",
+    "opthy-backend": "https://github.com/opthydefi/opthy-v1-core",
     "date-fns": "^2.28.0",
     "ether-swr": "^2.0.1",
     "ethers": "^5.5.4",

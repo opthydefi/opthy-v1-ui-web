@@ -2,6 +2,9 @@ import upperFirst from 'lodash/upperFirst';
 import camelCase from 'lodash/camelCase';
 import { CODE_VARIANTS, LANGUAGES } from './constants';
 
+import OPTHYABI from "opthy-backend/contracts/artifacts/Opthy.json";
+import OPTHYSABI from "opthy-backend/contracts/artifacts/Opthys.json";
+
 /**
  * Mapping from the date adapter sub-packages to the npm packages they require.
  * @example `@mui/lab/AdapterDateFns` has a peer dependency on `date-fns`.
@@ -261,4 +264,13 @@ export function pathnameToLanguage(pathname: string): { userLanguage: string; ca
 export function escapeCell(value: string): string {
   // As the pipe is use for the table structure
   return value.replace(/</g, '&lt;').replace(/`&lt;/g, '`<').replace(/\|/g, '\\|');
+}
+
+export const name2ABI = (contractName: string) => {
+  if (contractName === "Opthy") {
+    return OPTHYABI.abi as any;
+  }
+  // if (contractName === "Opthys") {
+  //   return OPTHYSABI.abi as any;
+  // }
 }

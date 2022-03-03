@@ -1,4 +1,5 @@
 //import moment from "moment";
+
 const CODE_VARIANTS = {
   JS: "JS",
   TS: "TS",
@@ -30,7 +31,7 @@ const LANGUAGES_LABEL = [
 ];
 
 const ENABLE_REDUX_DEV_TOOLS = true;
-const BACKEND_BASE_URL = "https://backend.doctorscan.com.au/api/v1/";
+// const BACKEND_BASE_URL = "https://backend.doctorscan.com.au/api/v1/";
 
 const THEMES = {
   LIGHT: "light",
@@ -45,5 +46,5 @@ module.exports = {
   LANGUAGES_IN_PROGRESS,
   ENABLE_REDUX_DEV_TOOLS,
   THEMES,
-  BACKEND_BASE_URL,
+  // BACKEND_BASE_URL,
 };

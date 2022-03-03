@@ -4,11 +4,25 @@ import Page from 'src/components/Page';
 // import { BuyContractComponent } from 'src/BuyContractComponent';
 import { Grid, Box, Typography } from '@mui/material';
 import { OpthyCard } from "src/components/Card";
+import useSWR from 'swr';
+import { BigNumber, ethers } from 'ethers';
+import { name2ABI } from "src/utils/helpers";
 
 
 
+declare const window: any;
 
 const Home: FC = () => {
+
+    const { data: balance, mutate } = useSWR(['getBalance', '0x9d23e5D38C31DF9FF11512e40f43a2a4Fa7a3b41', 'latest'])
+    console.log(balance, 'balance')
+
+    // mutate(new BigNumber(10, balance._hex), false)
+
+    React.useEffect(() => {
+        mutate('', true);
+    }, []);
+
     return (
         <Page title="Home page">
             <Box m={2}>

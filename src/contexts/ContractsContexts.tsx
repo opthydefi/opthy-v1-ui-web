@@ -4,6 +4,12 @@ import type { FC, ReactNode } from 'react';
 import { contractABI, contractAddress } from "src/artifacts/constants";
 import LoadingScreen from 'src/components/LoadingScreen';
 import InstallMetamask from 'src/views/errors/InstallMetamask';
+import { Web3Provider } from "@ethersproject/providers";
+import { isAddress } from "@ethersproject/address";
+import { SWRConfig } from "swr";
+import { name2ABI } from "src/utils/helpers";
+
+
 
 
 
@@ -21,7 +27,7 @@ interface AppInitializeState {
 
 interface ContractsContextValue extends AppInitializeState {
 
-    connectWallet: (user: any) => Promise<void>;
+    // connectWallet: (user: any) => Promise<void>;
 }
 
 
@@ -39,11 +45,11 @@ const initialAppState: AppInitializeState = {
 
 const ContractsContext = React.createContext<ContractsContextValue>({
     ...initialAppState,
-    connectWallet: () => Promise.resolve(),
+    // connectWallet: () => Promise.resolve(),
     // test: () => Promise.resolve(),
 });
 
-interface EthereumProviderProps {
+interface ContractsProviderProps {
     children: ReactNode;
 }
 
@@ -54,29 +60,8 @@ type InitializeAction = {
     };
 };
 
-type ChangeMetamaskAddress = {
-    type: "CHANGE_METAMASK_ADDRESS",
-    payload: {
-        userCurrentAddress: string;
-    }
-}
 
-type ConnectWallet = {
-    type: "CONNECT_WALLET",
-    payload: {
-        userCurrentAddress: string;
-        isWalletConnected: boolean;
-    }
-}
-
-type checkIsMetamaskInstall = {
-    type: "CHECK_METAMASK_INSTALL",
-    payload: {
-        isMetamaskInstall: boolean;
-    }
-}
-
-type Action = InitializeAction | ChangeMetamaskAddress | checkIsMetamaskInstall | ConnectWallet;
+type Action = InitializeAction;
 
 const stateReducer = (state: AppInitializeState, action: Action): AppInitializeState => {
     switch (action.type) {
@@ -87,160 +72,71 @@ const stateReducer = (state: AppInitializeState, action: Action): AppInitializeS
                 isInitialized
             };
         }
-        case "CHECK_METAMASK_INSTALL": {
-            const { isMetamaskInstall } = action.payload;
-            return {
-                ...state,
-                isMetamaskInstall
-            };
-        }
-        case "CONNECT_WALLET": {
-            const { userCurrentAddress, isWalletConnected } = action.payload;
-            return {
-                ...state,
-                userCurrentAddress,
-                isWalletConnected
-            }
-        }
+
         default: {
             return { ...state };
         }
     }
 }
 
-export const EthereumProvider: FC<EthereumProviderProps> = ({ children }) => {
+export const ContractsProvider: FC<ContractsProviderProps> = ({ children }) => {
     const [state, dispatch] = React.useReducer(stateReducer, initialAppState);
+
+
     const { ethereum } = window;
     // console.log(ethereum, "ethereum")
 
 
-    const createEthereumContract = () => {
-        const provider = new ethers.providers.Web3Provider(ethereum);
-        const signer = provider.getSigner();
-        const transactionsContract = new ethers.Contract(contractAddress, contractABI, signer);
-        // console.log(provider, signer, transactionsContract, 'provider, signer, transactionsContract')
-        return transactionsContract;
-    };
+    // const createEthereumContract = () => {
+    //     const provider = new ethers.providers.Web3Provider(ethereum);
+    //     const signer = provider.getSigner();
+    //     const transactionsContract = new ethers.Contract(contractAddress, contractABI, signer);
+    //     // console.log(provider, signer, transactionsContract, 'provider, signer, transactionsContract')
+    //     return transactionsContract;
+    // };
 
+    // const fetcher = (library: Web3Provider, abi?: any) => (...args: any) => {
+    //     console.log(library, abi, args, "dfd");
+    //     const [arg1, arg2, ...params] = args
+    //     // it's a contract
+    //     if (isAddress(arg1)) {
+    //         const address = arg1
+    //         const method = arg2
+    //         const contract = new ethers.Contract(address, abi, library.getSigner())
+    //         return contract[method](...params)
+    //     }
+    //     // it's a eth call
+    //     const method = arg1
+    //     return library[method](arg2, ...params)
+    // }
 
-    React.useEffect(() => {
-        if (state.isInitialized === true) {
-            console.log("app initialize");
-            if (!ethereum) {
-                dispatch({
-                    type: "CHECK_METAMASK_INSTALL",
-                    payload: {
-                        isMetamaskInstall: false,
-                    }
-                })
-
-            } else {
-                dispatch({
-                    type: "CHECK_METAMASK_INSTALL",
-                    payload: {
-                        isMetamaskInstall: true,
-                    }
-                })
-                if (ethereum.selectedAddress) {
-                    connectWallet();
-                }
-            }
+    const fetcher = (library: Web3Provider, abi?: any) => (...args: any) => {
+        const [arg1, arg2, ...params] = args
+        // it's a contract
+        console.log(abi, 'abi')
+        if (isAddress(arg1)) {
+            const address = arg1
+            const method = arg2
+            const contract = new ethers.Contract(address, abi, library.getSigner())
+            return contract[method](...params)
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [ethereum, state.isInitialized])
-
-
-
-
-    useEffect(() => {
-        /* on account change its recommended to reload state*/
-        if (ethereum) {
-            const reloadPage = () => {
-                window.location.reload();
-            }
-            ethereum.on('accountsChanged', reloadPage)
-        }
-
-    }, [ethereum])
-
-
-    useEffect(() => {
-        /* on chainChanged its recommended to reload state*/
-        if (ethereum) {
-            const reloadPage = () => {
-                window.location.reload();
-            }
-            ethereum.on('chainChanged', reloadPage)
-        }
-    }, [ethereum])
-
-
-    useEffect(() => {
-        /* on connect*/
-        if (ethereum) {
-            const connectEthereum = (e: any) => {
-                console.log("what is e", e)
-            }
-            ethereum.on('connect', connectEthereum)
-        }
-    }, [ethereum])
-
-
-    React.useEffect(() => {
-        dispatch({
-            type: "INITIALIZE",
-            payload: {
-                isInitialized: true,
-            }
-        })
-    }, [])
-
-
-
-
-
-
-
-    const connectWallet = async () => {
-        try {
-            if (!ethereum) return alert("Please install MetaMask.");
-
-            const accounts = await ethereum.request({ method: "eth_requestAccounts", });
-            dispatch({
-                type: "CONNECT_WALLET",
-                payload: {
-                    userCurrentAddress: accounts[0],
-                    isWalletConnected: true
-                }
-            })
-            console.log(accounts);
-            //   setCurrentAccount(accounts[0]);
-            //   window.location.reload();
-        } catch (error) {
-            console.log(error);
-
-            throw new Error("No ethereum object");
-        }
-    };
-
-    const anyFunc = async () => { }
-
-
-    if (!state.isInitialized) {
-        return <LoadingScreen />
+        // it's a eth call
+        const method = arg1
+        return library[method](arg2, ...params)
     }
 
-    if (state.isMetamaskInstall === false && state.isInitialized === true) {
-        return <InstallMetamask />
-    }
+    const provider = new ethers.providers.Web3Provider(ethereum);
 
-    return (<ContractsContext.Provider
-        value={{
-            ...state,
-            connectWallet
-        }}>
-        {children}
-    </ContractsContext.Provider>)
+    return (
+        <SWRConfig value={{ fetcher: fetcher(provider, name2ABI('Opthy')) }}>
+            <ContractsContext.Provider
+                value={{
+                    ...state,
+                }}>
+                {children}
+            </ContractsContext.Provider>
+        </SWRConfig>
+    )
 }
 
 export const useContractsState = () => useContext(ContractsContext);
