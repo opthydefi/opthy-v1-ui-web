@@ -13,7 +13,7 @@ import {
 import MainLayout from 'src/layouts/MainLayout';
 import LoadingScreen from 'src/components/LoadingScreen';
 import Home from 'src/views/home';
-import BuyContract from 'src/views/buyContract';
+
 
 
 

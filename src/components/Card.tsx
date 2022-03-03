@@ -28,7 +28,7 @@ interface CardProps {
     data: any;
 }
 
-const OpathiCard: FC<CardProps> = ({ data }: CardProps) => {
+export const OpthyCard: FC<CardProps> = ({ data }: CardProps) => {
     return (
         <Card sx={{ maxWidth: 345 }}>
             <CardActionArea>
@@ -46,4 +46,3 @@ const OpathiCard: FC<CardProps> = ({ data }: CardProps) => {
         </Card>
     )
 }
-export default OpathiCard;
