@@ -3,11 +3,12 @@ import type { FC } from 'react';
 import { Link as RouterLink, useHistory } from 'react-router-dom';
 import clsx from 'clsx';
 import PropTypes from 'prop-types';
-import { AppBar, Box, Button, Divider, Toolbar, Hidden, Typography, Link } from '@mui/material';
+import { AppBar, Grid, Box, Button, Divider, Toolbar, Hidden, Typography, Link, Container } from '@mui/material';
 import makeStyles from '@mui/styles/makeStyles';
 // import Logo from 'src/components/Logo';
 import type { Theme } from "src/types/theme";
 import { useEthersState } from 'src/contexts/EthereumContext';
+import { Padding } from '@mui/icons-material';
 
 // import Register from 'src/components/modals/Register';
 
@@ -21,7 +22,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     backgroundColor: theme.palette.primary.main
   },
   toolbar: {
-    height: 64
+    height: 64,
   },
   logo: {
     marginRight: theme.spacing(2)
@@ -37,7 +38,19 @@ const useStyles = makeStyles((theme: Theme) => ({
     height: 32,
     marginLeft: theme.spacing(2),
     marginRight: theme.spacing(2)
+  },
+  customContainer: {       
+    minWidth: '100%'        
+  },
+  customMenu: {
+    display: 'flex',
+    padding: '15px 24px 15px',
+    justifyContent: 'space-between',
+    borderTop: `1px solid ${theme.palette.primary.main}`,
+    borderBottom: `1px solid ${theme.palette.primary.main}`,
+    margin: '0 0 24px',   
   }
+  
 }));
 
 const TopBar: FC<TopBarProps> = ({ className, ...rest }) => {
@@ -66,19 +79,50 @@ const TopBar: FC<TopBarProps> = ({ className, ...rest }) => {
       color="default"
       {...rest}
     >
-      <Toolbar className={classes.toolbar}>
-        <RouterLink to="/">
-          <Typography>Logo</Typography>
-        </RouterLink>
-        <Box flexGrow={1} />
-        <Button
-          color='primary'
-          variant='outlined'
-          onClick={connectWallet}
-        >
-          Login
-        </Button>
-      </Toolbar>
+       <Container className={classes.customContainer}>
+        <Toolbar className={classes.toolbar}>
+          <RouterLink to="/">
+            {/* <img src={}/> */}
+            <Typography>Opthy</Typography>
+          </RouterLink>
+          <Box flexGrow={1} />
+          <Button
+            color='primary'
+            variant='contained'
+            onClick={connectWallet}
+          >
+            Login
+          </Button>
+        </Toolbar>
+        <Box className={classes.customMenu}>
+          <Link href="#" underline="none">
+            Buy Contracts
+          </Link>
+          <Link href="#" underline="none">
+            Sell Contracts
+          </Link>
+          <Link href="#" underline="none">
+            Create Contract
+          </Link>
+          <Link href="#" underline="none">
+            Edit Buy Contract Offers
+          </Link>
+          <Link href="#" underline="none">
+            Edit  Sell Contract Offers
+          </Link>
+          <Link href="#" underline="none">
+            Bought Contracts
+          </Link>
+          <Link href="#" underline="none">
+            Sold Contracts
+          </Link>
+          <Link href="#" underline="none">
+            About us
+          </Link>               
+        </Box>
+
+       </Container>
+      
 
     </AppBar>
   );

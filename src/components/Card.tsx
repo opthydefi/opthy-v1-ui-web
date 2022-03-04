@@ -30,8 +30,9 @@ interface CardProps {
 }
 
 export const OpthyCard: FC<CardProps> = ({ data }: CardProps) => {
+    const classes = useStyles();
     return (
-        <Card sx={{ minWidth: 420, maxWidth: 420, m: 1 }}>
+        <Card sx={{ m: 1 }}>
             <CardActionArea>
                 <CardContent>
                 <Box>
@@ -57,7 +58,7 @@ export const OpthyCard: FC<CardProps> = ({ data }: CardProps) => {
                         
                     </Grid>
                 </Grid>
-                <Grid container spacing={2}>
+                <Grid container spacing={2} mt={1}>
                     <Grid item xs={6}>
                         <Typography variant="body2" color="text.secondary">
                             Current: 
@@ -77,7 +78,7 @@ export const OpthyCard: FC<CardProps> = ({ data }: CardProps) => {
                         </Typography>
                     </Grid>
                 </Grid> 
-                <Grid container spacing={2}>
+                <Grid container spacing={2} mt={1}>
                     <Grid item xs={6}>
                         <Typography variant="body2" color="text.secondary">
                             Liquidity Limit:
@@ -99,7 +100,7 @@ export const OpthyCard: FC<CardProps> = ({ data }: CardProps) => {
                 </Grid>
                 <Divider/>
                 <Grid container spacing={2} mt={0}>
-                    <Grid item xs={7}>
+                    <Grid item xs={6}>
                         <Typography variant="body2" color="text.secondary">
                             Get unlimited swaps for:
                             <Box p={1}>
@@ -107,17 +108,24 @@ export const OpthyCard: FC<CardProps> = ({ data }: CardProps) => {
                             </Box>
                         </Typography>
                     </Grid>
-                    <Grid item xs={5}>
+                    <Grid item xs={6}>
                         <Typography variant="body2" color="text.secondary">
                             &nbsp;
-                            <Typography gutterBottom variant="body2" color="text.secondary">~ $141,444.44 USD</Typography>
+                            <Box mt={1}>
+                                <Typography gutterBottom variant="body2" color="text.secondary">~ $141,444.44 USD</Typography>
+                            </Box>                          
+                            
                         </Typography>
                     </Grid>
                 </Grid>
                 </CardContent>
             </CardActionArea>
             <CardActions>
-                <Button size="medium" sx={{ m: 1 }} variant="contained" color="primary">View Offer</Button>
+                <Grid container spacing={2} mt={0} justifyContent="center">
+                    <Grid item>
+                        <Button size="medium" sx={{ m: 1 }} variant="contained" color="primary">View Offer</Button>
+                    </Grid>
+                </Grid>
             </CardActions>
         </Card>
     )
