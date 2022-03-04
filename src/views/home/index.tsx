@@ -12,7 +12,7 @@ const Home: FC = () => {
     // const getData = [{title: }]
     return (
         <Page title="Home page">
-            <Box m={2}>
+            <Box m={2} ml={10}>
                 <Grid container spacing={2}>
                     <Grid item xs={12}>
                         <Typography variant="h2">Buy on Opthy</Typography>
@@ -20,11 +20,12 @@ const Home: FC = () => {
                     </Grid>
                 </Grid>
             </Box>
-            <Box m={2}>
+            <Box m={2} ml={10}>
                 <Grid container spacing={0}>
                     {/* Opthy card loop  */}
                     <OpthyCard data={{ title: "First Test" }} />
                     <OpthyCard data={{ title: "Second Test" }} />
+                    <OpthyCard data={{ title: "Third Test" }} />
                     {/* Opthy card loop  */}
                 </Grid>
             </Box>
