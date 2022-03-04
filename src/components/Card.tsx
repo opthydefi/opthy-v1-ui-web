@@ -20,6 +20,9 @@ const useStyles = makeStyles((theme: Theme) => ({
         justifyContent: 'center',
         minHeight: '100%',
         padding: theme.spacing(3)
+    },
+    boxHeader: {
+        height: '8px'
     }
 }));
 
@@ -32,14 +35,26 @@ interface CardProps {
 export const OpthyCard: FC<CardProps> = ({ data }: CardProps) => {
     const classes = useStyles();
     return (
-        <Card sx={{ m: 1 }}>
-            <CardActionArea>
+        <Card sx={{ m: 1, borderRadius: '10px' }}>
+            {/* <CardActionArea> */}
+                <Box className={classes.boxHeader} sx={{backgroundColor: 'success.dark'}}></Box>
                 <CardContent>
-                <Box>
-                    <Typography gutterBottom variant="h5" component="div">
-                        BTC
-                    </Typography>
-                </Box>
+                {/* <Box> */}
+                    <Grid container>
+                        <Grid item xs={1.5}>
+                            <Typography gutterBottom variant="h5" component="div">BTC</Typography>
+                        </Grid>
+                        <Grid item xs={6} mt={2}>
+                            <Divider light={true} sx={{ borderBottomWidth: 10, borderRadius: 2 }} />
+                        </Grid>
+                        <Grid item xs={3} mt={2}>
+                            <Divider sx={{ borderBottomWidth: 10, borderRadius: 2 }} />
+                        </Grid>
+                        <Grid item xs={1.5}>
+                            <Typography align="right" gutterBottom variant="h5" component="div">DAI</Typography>
+                        </Grid>
+                    </Grid>
+                {/* </Box> */}
                 <Grid container spacing={2} mt={0}>
                     <Grid item xs={6}>
                         <Typography variant="body2" color="text.secondary">
@@ -119,7 +134,7 @@ export const OpthyCard: FC<CardProps> = ({ data }: CardProps) => {
                     </Grid>
                 </Grid>
                 </CardContent>
-            </CardActionArea>
+            {/* </CardActionArea> */}
             <CardActions>
                 <Grid container spacing={2} mt={0} justifyContent="center">
                     <Grid item>

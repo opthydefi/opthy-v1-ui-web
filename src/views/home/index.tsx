@@ -40,7 +40,7 @@ const Home: FC = () => {
                     </Grid>
                     <Grid item xs={12} md={4}>
                         <OpthyCard data={{ title: "Third Test" }} />
-                    </Grid>                    
+                    </Grid>                 
                     {/* Opthy card loop  */}                   
                 </Grid>
             </Box>
