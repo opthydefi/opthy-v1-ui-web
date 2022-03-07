@@ -110,25 +110,53 @@ export const ContractsProvider: FC<ContractsProviderProps> = ({ children }) => {
     //     return library[method](arg2, ...params)
     // }
 
-    const fetcher = (library: Web3Provider, abi?: any) => (...args: any) => {
-        const [arg1, arg2, ...params] = args
+    const fetcher = () => (...args: any) => {
+        const library: Web3Provider = new ethers.providers.Web3Provider(ethereum);
+        const [abi, arg1, arg2, ...params] = args
+
+        // console.log(abi);
         // it's a contract
-        console.log(abi, 'abi')
         if (isAddress(arg1)) {
+
             const address = arg1
             const method = arg2
             const contract = new ethers.Contract(address, abi, library.getSigner())
+            console.log(contract, method, 'abi, arg1, arg2, params');
             return contract[method](...params)
         }
         // it's a eth call
+        // console.log(library, arg1, arg2)
         const method = arg1
         return library[method](arg2, ...params)
     }
 
-    const provider = new ethers.providers.Web3Provider(ethereum);
+    // const fetcher = (arg1: string, ...args: any[]) => {
+    //     // console.log(arg1, args); ////////////////////////////////////////////////////////////////////
+    //     //arg1 is an address, so it's a contract call
+
+
+    //     const library: Web3Provider = new ethers.providers.Web3Provider(ethereum);
+    //     if (isAddress(arg1)) {
+    //         const [address, contractName, abi, method, ...params] = [arg1, ...args];
+    //         const contract = new ethers.Contract(address, abi, library.getSigner());
+
+    //         //   const contract = new Contract(address, name2ABI(contractName), library.getSigner(window.ethereum.selectedAddress))
+    //         return contract[method](...params)
+    //     }
+    //     console.log(library, arg1, args, 'library, arg1, args')
+    //     // //arg1 is a method, so it's a eth call
+    //     return library[arg1](...args)
+    // }
+
 
     return (
-        <SWRConfig value={{ fetcher: fetcher(provider, name2ABI('Opthy')) }}>
+        <SWRConfig
+            value={{
+                refreshInterval: 10000,
+                fetcher: fetcher()
+            }}
+        // value={{ fetcher: fetcher }}
+        >
             <ContractsContext.Provider
                 value={{
                     ...state,

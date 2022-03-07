@@ -38,6 +38,11 @@ const THEMES = {
   DARK: "dark",
 };
 
+const OPTHY_NETWORKS = {
+  RinkebyTestnet: 4,
+  GodwokenTestnet: 71393,
+};
+
 module.exports = {
   CODE_VARIANTS,
   LANGUAGES,
@@ -46,5 +51,6 @@ module.exports = {
   LANGUAGES_IN_PROGRESS,
   ENABLE_REDUX_DEV_TOOLS,
   THEMES,
+  OPTHY_NETWORKS,
   // BACKEND_BASE_URL,
 };

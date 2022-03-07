@@ -141,7 +141,7 @@ export const EthereumProvider: FC<EthereumProviderProps> = ({ children }) => {
     const initializeProvider = () => {
         const provider = new ethers.providers.Web3Provider(ethereum);
         const signer = provider.getSigner();
-        console.log(provider, signer, 'provider, signer')
+        // console.log(provider, signer, 'provider, signer')
     }
 
 
@@ -236,7 +236,7 @@ export const EthereumProvider: FC<EthereumProviderProps> = ({ children }) => {
                     isWalletConnected: true
                 }
             })
-            console.log(accounts);
+            // console.log(accounts);
             //   setCurrentAccount(accounts[0]);
             //   window.location.reload();
         } catch (error) {

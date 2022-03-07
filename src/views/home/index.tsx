@@ -7,20 +7,23 @@ import { OpthyCard } from "src/components/Card";
 import useSWR from 'swr';
 import { BigNumber, ethers } from 'ethers';
 import { name2ABI } from "src/utils/helpers";
+import { opthysAddress, contractName2ABI } from 'opthy-v1-core';
+import { OPTHY_NETWORKS } from "src/utils/constants";
 
 
 
 declare const window: any;
 
 const Home: FC = () => {
+    let { ethereum } = window;
+    const provider = new ethers.providers.Web3Provider(ethereum);
+    let address = opthysAddress(OPTHY_NETWORKS.RinkebyTestnet)
+    const { data: opthys, mutate, isValidating } = useSWR([contractName2ABI('Opthys'), address, "opthys"]);
+    // console.log(opthys, isValidating, 'isValidating')
 
-    const { data: balance, mutate } = useSWR(['getBalance', '0x9d23e5D38C31DF9FF11512e40f43a2a4Fa7a3b41', 'latest'])
-    console.log(balance, 'balance')
-
-    // mutate(new BigNumber(10, balance._hex), false)
 
     React.useEffect(() => {
-        mutate('', true);
+        mutate(opthys, true);
     }, []);
 
     return (

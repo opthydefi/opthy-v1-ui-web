@@ -1,9 +1,24 @@
 import upperFirst from 'lodash/upperFirst';
 import camelCase from 'lodash/camelCase';
 import { CODE_VARIANTS, LANGUAGES } from './constants';
+// import { opthysAddress, chainNameIDs, contractName2ABI } from "opthy-v1-core";
 
-import OPTHYABI from "opthy-backend/contracts/artifacts/Opthy.json";
-import OPTHYSABI from "opthy-backend/contracts/artifacts/Opthys.json";
+
+// declare module "opthy" {
+//   export function chainNameIDs(): any;
+//   export function opthysAddress(chainId: number): any;
+//   export function ERC20Whitelist(chainId: number): any;
+//   export function contractName2ABI(contractName: string): any;
+// }
+// import OPTHYABI from "opthy/contracts/artifacts/Opthy.json";
+// import OPTHYSABI from "opthy/contracts/artifacts/Opthys.json";
+
+
+
+
+
+// import OPTHYABI from "opthy/contracts/artifacts/Opthy.json";
+// import OPTHYSABI from "opthy/contracts/artifacts/Opthys.json";
 
 /**
  * Mapping from the date adapter sub-packages to the npm packages they require.
@@ -266,9 +281,13 @@ export function escapeCell(value: string): string {
   return value.replace(/</g, '&lt;').replace(/`&lt;/g, '`<').replace(/\|/g, '\\|');
 }
 
+// a.get('RinkebyTestnet')
+
+// console.log(opthysAddress, 'chainNameIDs, opthysAddress, contractName2ABI');
 export const name2ABI = (contractName: string) => {
   if (contractName === "Opthy") {
-    return OPTHYABI.abi as any;
+    // return OPTHYABI.abi as any;
+    return 1;
   }
   // if (contractName === "Opthys") {
   //   return OPTHYSABI.abi as any;
