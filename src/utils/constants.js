@@ -1,4 +1,5 @@
 //import moment from "moment";
+
 const CODE_VARIANTS = {
   JS: "JS",
   TS: "TS",
@@ -30,11 +31,16 @@ const LANGUAGES_LABEL = [
 ];
 
 const ENABLE_REDUX_DEV_TOOLS = true;
-const BACKEND_BASE_URL = "https://backend.doctorscan.com.au/api/v1/";
+// const BACKEND_BASE_URL = "https://backend.doctorscan.com.au/api/v1/";
 
 const THEMES = {
   LIGHT: "light",
   DARK: "dark",
+};
+
+const OPTHY_NETWORKS = {
+  RinkebyTestnet: 4,
+  GodwokenTestnet: 71393,
 };
 
 module.exports = {
@@ -45,5 +51,6 @@ module.exports = {
   LANGUAGES_IN_PROGRESS,
   ENABLE_REDUX_DEV_TOOLS,
   THEMES,
-  BACKEND_BASE_URL,
+  OPTHY_NETWORKS,
+  // BACKEND_BASE_URL,
 };

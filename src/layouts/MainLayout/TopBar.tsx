@@ -8,8 +8,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import Logo from '../../images/bi_graph-up.svg';
 import type { Theme } from "src/types/theme";
 import { useEthersState } from 'src/contexts/EthereumContext';
-import { Padding } from '@mui/icons-material';
-
+import PersonIcon from '@mui/icons-material/Person';
 // import Register from 'src/components/modals/Register';
 
 
@@ -55,7 +54,7 @@ const useStyles = makeStyles((theme: Theme) => ({
 
 const TopBar: FC<TopBarProps> = ({ className, ...rest }) => {
   const classes = useStyles();
-  const { connectWallet } = useEthersState();
+  const { connectWallet, userCurrentAddress, isMetamaskInstall } = useEthersState();
 
   let history = useHistory();
   const [openRegisterButton, setOpenRegisterButton] = React.useState(false);
@@ -79,20 +78,30 @@ const TopBar: FC<TopBarProps> = ({ className, ...rest }) => {
       color="default"
       {...rest}
     >
-       <Container className={classes.customContainer}>
+      <Container className={classes.customContainer}>
         <Toolbar className={classes.toolbar}>
           <RouterLink to="/">
-            <img src={Logo}/>
+          <img src={Logo}/>
             <Typography sx={{display: 'inline-block'}}> Opthy</Typography>
           </RouterLink>
           <Box flexGrow={1} />
-          <Button
-            color='primary'
-            variant='contained'
-            onClick={connectWallet}
-          >
-            Login
-          </Button>
+          {isMetamaskInstall === true && userCurrentAddress !== '' && (
+            <>
+              <Button variant="outlined" startIcon={<PersonIcon />}>
+                Logged In
+              </Button>
+            </>
+          )}
+          {isMetamaskInstall === true && userCurrentAddress === '' && (
+            <Button
+              color='primary'
+              variant='outlined'
+              onClick={connectWallet}
+            >
+              Login
+            </Button>
+          )}
+
         </Toolbar>
         <Box className={classes.customMenu}>
           <Link href="#" underline="none">
@@ -120,10 +129,7 @@ const TopBar: FC<TopBarProps> = ({ className, ...rest }) => {
             About us
           </Link>               
         </Box>
-
-       </Container>
-      
-
+      </Container>
     </AppBar>
   );
 };

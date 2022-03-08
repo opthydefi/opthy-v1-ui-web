@@ -17,6 +17,7 @@ interface AppInitializeState {
     userCurrentAddress: string;
     userTransactions: any[];
     isWalletConnected: boolean;
+    provider: any;
 }
 
 interface EthereumContextValue extends AppInitializeState {
@@ -34,6 +35,7 @@ const initialAppState: AppInitializeState = {
     userCurrentAddress: '',
     userTransactions: [],
     isWalletConnected: false,
+    provider: null,
 };
 
 
@@ -53,6 +55,13 @@ type InitializeAction = {
         isInitialized: boolean;
     };
 };
+
+type InitializeProvider = {
+    type: "SET_PROVIDER";
+    payload: {
+        provider: any;
+    }
+}
 
 type ChangeMetamaskAddress = {
     type: "CHANGE_METAMASK_ADDRESS",
@@ -76,7 +85,7 @@ type checkIsMetamaskInstall = {
     }
 }
 
-type Action = InitializeAction | ChangeMetamaskAddress | checkIsMetamaskInstall | ConnectWallet;
+type Action = InitializeAction | ChangeMetamaskAddress | checkIsMetamaskInstall | ConnectWallet | InitializeProvider;
 
 const stateReducer = (state: AppInitializeState, action: Action): AppInitializeState => {
     switch (action.type) {
@@ -102,6 +111,13 @@ const stateReducer = (state: AppInitializeState, action: Action): AppInitializeS
                 isWalletConnected
             }
         }
+        case "SET_PROVIDER": {
+            const { provider } = action.payload;
+            return {
+                ...state,
+                provider: provider
+            }
+        }
         default: {
             return { ...state };
         }
@@ -111,19 +127,27 @@ const stateReducer = (state: AppInitializeState, action: Action): AppInitializeS
 export const EthereumProvider: FC<EthereumProviderProps> = ({ children }) => {
     const [state, dispatch] = React.useReducer(stateReducer, initialAppState);
     const { ethereum } = window;
+    // console.log(ethereum, "ethereum")
 
 
     const createEthereumContract = () => {
         const provider = new ethers.providers.Web3Provider(ethereum);
         const signer = provider.getSigner();
         const transactionsContract = new ethers.Contract(contractAddress, contractABI, signer);
+        // console.log(provider, signer, transactionsContract, 'provider, signer, transactionsContract')
         return transactionsContract;
     };
+
+    const initializeProvider = () => {
+        const provider = new ethers.providers.Web3Provider(ethereum);
+        const signer = provider.getSigner();
+        // console.log(provider, signer, 'provider, signer')
+    }
 
 
     React.useEffect(() => {
         if (state.isInitialized === true) {
-            console.log(ethereum, 'ethereum')
+            console.log("app initialize");
             if (!ethereum) {
                 dispatch({
                     type: "CHECK_METAMASK_INSTALL",
@@ -131,6 +155,7 @@ export const EthereumProvider: FC<EthereumProviderProps> = ({ children }) => {
                         isMetamaskInstall: false,
                     }
                 })
+
             } else {
                 dispatch({
                     type: "CHECK_METAMASK_INSTALL",
@@ -138,9 +163,50 @@ export const EthereumProvider: FC<EthereumProviderProps> = ({ children }) => {
                         isMetamaskInstall: true,
                     }
                 })
+                initializeProvider();
+                if (ethereum.selectedAddress) {
+                    connectWallet();
+                }
             }
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [ethereum, state.isInitialized])
+
+
+
+
+    useEffect(() => {
+        /* on account change its recommended to reload state*/
+        if (ethereum) {
+            const reloadPage = () => {
+                window.location.reload();
+            }
+            ethereum.on('accountsChanged', reloadPage)
+        }
+
+    }, [ethereum])
+
+
+    useEffect(() => {
+        /* on chainChanged its recommended to reload state*/
+        if (ethereum) {
+            const reloadPage = () => {
+                window.location.reload();
+            }
+            ethereum.on('chainChanged', reloadPage)
+        }
+    }, [ethereum])
+
+
+    useEffect(() => {
+        /* on connect*/
+        if (ethereum) {
+            const connectEthereum = (e: any) => {
+                console.log("what is e", e)
+            }
+            ethereum.on('connect', connectEthereum)
+        }
+    }, [ethereum])
 
 
     React.useEffect(() => {
@@ -151,6 +217,8 @@ export const EthereumProvider: FC<EthereumProviderProps> = ({ children }) => {
             }
         })
     }, [])
+
+
 
 
 
@@ -168,6 +236,7 @@ export const EthereumProvider: FC<EthereumProviderProps> = ({ children }) => {
                     isWalletConnected: true
                 }
             })
+            // console.log(accounts);
             //   setCurrentAccount(accounts[0]);
             //   window.location.reload();
         } catch (error) {

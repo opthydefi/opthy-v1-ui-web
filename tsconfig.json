@@ -2,7 +2,14 @@
   "compilerOptions": {
     "target": "es5",
     "downlevelIteration": true,
-    "lib": ["dom", "dom.iterable", "esnext", "ES6"],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext",
+      "ES6",
+      "ScriptHost",
+      "ES2016.Array.Include"
+    ],
     "allowJs": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
@@ -23,5 +30,7 @@
     "noImplicitThis": true,
     "strictNullChecks": true
   },
-  "include": ["src", "types"]
+  "include": ["src", "types"],
+  "extends": "@tsconfig/recommended/tsconfig.json",
+  "exclude": ["node_modules"]
 }

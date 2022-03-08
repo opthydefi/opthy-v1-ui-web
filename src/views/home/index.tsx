@@ -1,11 +1,14 @@
 import React, { FC } from "react";
-import { TestComponents } from 'src/TestComponents';
 import Page from 'src/components/Page';
 import type { Theme } from 'src/types/theme';
-// import { BuyContractComponent } from 'src/BuyContractComponent';
 import { Grid, Box, Typography, Container } from '@mui/material';
 import { OpthyCard } from "src/components/Card";
 import makeStyles from '@mui/styles/makeStyles';
+import useSWR from 'swr';
+import { BigNumber, ethers } from 'ethers';
+import { name2ABI } from "src/utils/helpers";
+import { opthysAddress, contract2ABI, Contracts, ChainId } from 'opthy-v1-core';
+// import { OPTHY_NETWORKS } from "src/utils/constants";
 
 const useStyles = makeStyles((theme: Theme) => ({
     customContainer: {       
@@ -14,9 +17,21 @@ const useStyles = makeStyles((theme: Theme) => ({
 }));
 
 
+declare const window: any;
+
 const Home: FC = () => {
-    // const getData = [{title: }]
     const classes = useStyles();
+    let { ethereum } = window;
+    const provider = new ethers.providers.Web3Provider(ethereum);
+    let address = opthysAddress(ChainId.RinkebyTestnet);
+    const { data: opthys, mutate, isValidating } = useSWR([contract2ABI(Contracts.Opthys), address, "opthys"]);
+    console.log(opthys, isValidating, 'isValidating')
+
+
+    React.useEffect(() => {
+        // mutate(opthys, true);
+    }, []);
+
     return (
         <Page title="Home page">
             <Container className={classes.customContainer}>

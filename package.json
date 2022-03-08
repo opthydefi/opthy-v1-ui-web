@@ -31,6 +31,7 @@
     "jss-rtl": "^0.3.0",
     "lodash": "^4.17.21",
     "nprogress": "^0.2.0",
+    "opthy-v1-core": "github:opthydefi/opthy-v1-core",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-helmet": "^6.1.0",
@@ -44,7 +45,8 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "start2": "SET PORT=5555 && react-scripts start"
   },
   "eslintConfig": {
     "extends": [
@@ -65,6 +67,7 @@
     ]
   },
   "devDependencies": {
+    "@tsconfig/recommended": "^1.0.1",
     "@types/lodash": "^4.14.179",
     "@types/nprogress": "^0.2.0",
     "@types/react-helmet": "^6.1.5"
