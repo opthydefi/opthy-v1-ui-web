@@ -1,14 +1,14 @@
 import upperFirst from 'lodash/upperFirst';
 import camelCase from 'lodash/camelCase';
 import { CODE_VARIANTS, LANGUAGES } from './constants';
-// import { opthysAddress, chainNameIDs, contractName2ABI } from "opthy-v1-core";
+// import { opthysAddress, chainNameIDs, contract2ABI } from "opthy-v1-core";
 
 
 // declare module "opthy" {
 //   export function chainNameIDs(): any;
 //   export function opthysAddress(chainId: number): any;
 //   export function ERC20Whitelist(chainId: number): any;
-//   export function contractName2ABI(contractName: string): any;
+//   export function contract2ABI(contractName: string): any;
 // }
 // import OPTHYABI from "opthy/contracts/artifacts/Opthy.json";
 // import OPTHYSABI from "opthy/contracts/artifacts/Opthys.json";
@@ -283,7 +283,7 @@ export function escapeCell(value: string): string {
 
 // a.get('RinkebyTestnet')
 
-// console.log(opthysAddress, 'chainNameIDs, opthysAddress, contractName2ABI');
+// console.log(opthysAddress, 'chainNameIDs, opthysAddress, contract2ABI');
 export const name2ABI = (contractName: string) => {
   if (contractName === "Opthy") {
     // return OPTHYABI.abi as any;

@@ -110,18 +110,19 @@ export const ContractsProvider: FC<ContractsProviderProps> = ({ children }) => {
     //     return library[method](arg2, ...params)
     // }
 
-    const fetcher = () => (...args: any) => {
-        const library: Web3Provider = new ethers.providers.Web3Provider(ethereum);
+    const fetcher = () => async (...args: any) => {
+        // let provider = ethers.getDefaultProvider();
+        const library: Web3Provider = new ethers.providers.Web3Provider(ethereum, "any");
         const [abi, arg1, arg2, ...params] = args
-
+        await ethereum.enable();
         // console.log(abi);
         // it's a contract
         if (isAddress(arg1)) {
-
+            console.log("here");
             const address = arg1
             const method = arg2
             const contract = new ethers.Contract(address, abi, library.getSigner())
-            console.log(contract, method, 'abi, arg1, arg2, params');
+            console.log(contract, address, abi, arg2, params, 'contract, address, abi, method, params');
             return contract[method](...params)
         }
         // it's a eth call

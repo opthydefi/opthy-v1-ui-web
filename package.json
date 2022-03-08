@@ -31,7 +31,7 @@
     "jss-rtl": "^0.3.0",
     "lodash": "^4.17.21",
     "nprogress": "^0.2.0",
-    "opthy-v1-core": "github:opthydefi/opthy-v1-core#2cc6234",
+    "opthy-v1-core": "github:opthydefi/opthy-v1-core",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-helmet": "^6.1.0",
