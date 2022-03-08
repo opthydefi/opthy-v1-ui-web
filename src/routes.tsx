@@ -86,6 +86,11 @@ const routes: Routes = [
             //   path: '/pricing',
             //   component: lazy(() => import('src/views/pricing/PricingView'))
             // },
+            {
+              exact: true,
+              path: '/contract',
+              component: lazy(() => import('src/views/contract'))
+            },
 
             {
                 component: () => <Redirect to="/404" />

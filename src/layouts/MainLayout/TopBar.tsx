@@ -5,7 +5,7 @@ import clsx from 'clsx';
 import PropTypes from 'prop-types';
 import { AppBar, Grid, Box, Button, Divider, Toolbar, Hidden, Typography, Link, Container } from '@mui/material';
 import makeStyles from '@mui/styles/makeStyles';
-// import Logo from 'src/components/Logo';
+import Logo from '../../images/bi_graph-up.svg';
 import type { Theme } from "src/types/theme";
 import { useEthersState } from 'src/contexts/EthereumContext';
 import { Padding } from '@mui/icons-material';
@@ -82,8 +82,8 @@ const TopBar: FC<TopBarProps> = ({ className, ...rest }) => {
        <Container className={classes.customContainer}>
         <Toolbar className={classes.toolbar}>
           <RouterLink to="/">
-            {/* <img src={}/> */}
-            <Typography>Opthy</Typography>
+            <img src={Logo}/>
+            <Typography sx={{display: 'inline-block'}}> Opthy</Typography>
           </RouterLink>
           <Box flexGrow={1} />
           <Button
