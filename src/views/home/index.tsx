@@ -22,25 +22,11 @@ declare const window: any;
 const Home: FC = () => {
     const classes = useStyles();
     let { ethereum } = window;
-<<<<<<< HEAD
-    const provider = new ethers.providers.Web3Provider(ethereum);
-
-    // console.log("opthysAddress = ", opthysAddress);
-    // console.log("contract2ABI = ", contract2ABI);
-    // console.log("Contracts = ", Contracts);
-    // console.log("ChainId = ", ChainId);
-
-
-
-    let address = opthysAddress(ChainId.RinkebyTestnet);
-    const { data: opthys, mutate, isValidating } = useSWR([contract2ABI(Contracts.Opthys), address, "opthys"]);
-=======
     let AllOpthys = OpthysView(ChainId.RinkebyTestnet);
     // console.log(AllOpthys, 'AllOpthys')
     // const provider = new ethers.providers.Web3Provider(ethereum);
     // let address = opthysAddress(ChainId.RinkebyTestnet);
     const { data: opthys, mutate, isValidating } = useSWR([AllOpthys.ABI, AllOpthys.address, "all"]);
->>>>>>> 4df3a10cf98cd9b7af96016d76bebb586572aa50
     console.log(opthys, isValidating, 'isValidating')
 
 
