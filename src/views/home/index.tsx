@@ -7,7 +7,7 @@ import { OpthyCard } from "src/components/Card";
 import useSWR from 'swr';
 import { BigNumber, ethers } from 'ethers';
 import { name2ABI } from "src/utils/helpers";
-import { opthysAddress, contract2ABI, Contracts, ChainId } from 'opthy-v1-core';
+import { ChainId, ERC20, OpthyABI, Opthys, OpthysView } from 'opthy-v1-core';
 // import { OPTHY_NETWORKS } from "src/utils/constants";
 
 
@@ -17,9 +17,11 @@ declare const window: any;
 
 const Home: FC = () => {
     let { ethereum } = window;
-    const provider = new ethers.providers.Web3Provider(ethereum);
-    let address = opthysAddress(ChainId.RinkebyTestnet);
-    const { data: opthys, mutate, isValidating } = useSWR([contract2ABI(Contracts.Opthys), address, "opthys"]);
+    let AllOpthys = OpthysView(ChainId.RinkebyTestnet);
+    // console.log(AllOpthys, 'AllOpthys')
+    // const provider = new ethers.providers.Web3Provider(ethereum);
+    // let address = opthysAddress(ChainId.RinkebyTestnet);
+    const { data: opthys, mutate, isValidating } = useSWR([AllOpthys.ABI, AllOpthys.address, "all"]);
     console.log(opthys, isValidating, 'isValidating')
 
 
