@@ -23,6 +23,14 @@ const Home: FC = () => {
     const classes = useStyles();
     let { ethereum } = window;
     const provider = new ethers.providers.Web3Provider(ethereum);
+
+    // console.log("opthysAddress = ", opthysAddress);
+    // console.log("contract2ABI = ", contract2ABI);
+    // console.log("Contracts = ", Contracts);
+    // console.log("ChainId = ", ChainId);
+
+
+
     let address = opthysAddress(ChainId.RinkebyTestnet);
     const { data: opthys, mutate, isValidating } = useSWR([contract2ABI(Contracts.Opthys), address, "opthys"]);
     console.log(opthys, isValidating, 'isValidating')
@@ -45,7 +53,7 @@ const Home: FC = () => {
                 </Grid>
             </Box>
             <Box m={2}>
-                <Grid container spacing={2}>                   
+                <Grid container spacing={2}>
                     {/* Opthy card loop  */}
                     <Grid item xs={12} md={4}>
                          <OpthyCard data={{ title: "First Test" }} />
