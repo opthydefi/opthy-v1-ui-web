@@ -7,7 +7,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import useSWR from 'swr';
 import { BigNumber, ethers } from 'ethers';
 import { name2ABI } from "src/utils/helpers";
-import { opthysAddress, contract2ABI, Contracts, ChainId } from 'opthy-v1-core';
+import { ChainId, ERC20, OpthyABI, Opthys, OpthysView } from 'opthy-v1-core';
 // import { OPTHY_NETWORKS } from "src/utils/constants";
 
 const useStyles = makeStyles((theme: Theme) => ({
@@ -22,6 +22,7 @@ declare const window: any;
 const Home: FC = () => {
     const classes = useStyles();
     let { ethereum } = window;
+<<<<<<< HEAD
     const provider = new ethers.providers.Web3Provider(ethereum);
 
     // console.log("opthysAddress = ", opthysAddress);
@@ -33,6 +34,13 @@ const Home: FC = () => {
 
     let address = opthysAddress(ChainId.RinkebyTestnet);
     const { data: opthys, mutate, isValidating } = useSWR([contract2ABI(Contracts.Opthys), address, "opthys"]);
+=======
+    let AllOpthys = OpthysView(ChainId.RinkebyTestnet);
+    // console.log(AllOpthys, 'AllOpthys')
+    // const provider = new ethers.providers.Web3Provider(ethereum);
+    // let address = opthysAddress(ChainId.RinkebyTestnet);
+    const { data: opthys, mutate, isValidating } = useSWR([AllOpthys.ABI, AllOpthys.address, "all"]);
+>>>>>>> 4df3a10cf98cd9b7af96016d76bebb586572aa50
     console.log(opthys, isValidating, 'isValidating')
 
 
