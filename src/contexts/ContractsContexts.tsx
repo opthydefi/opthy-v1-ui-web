@@ -115,7 +115,7 @@ export const ContractsProvider: FC<ContractsProviderProps> = ({ children }) => {
         const library: Web3Provider = new ethers.providers.Web3Provider(ethereum, "any");
         const [abi, arg1, arg2, ...params] = args
         // await ethereum.enable();
-        // console.log(abi);
+        // console.log(abi, "abi");
         // it's a contract
         if (isAddress(arg1)) {
             // console.log("here");

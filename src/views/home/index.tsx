@@ -23,15 +23,42 @@ const Home: FC = () => {
     const classes = useStyles();
     let { ethereum } = window;
     let AllOpthys = OpthysView(ChainId.RinkebyTestnet);
-    // console.log(AllOpthys, 'AllOpthys')
-    // const provider = new ethers.providers.Web3Provider(ethereum);
-    // let address = opthysAddress(ChainId.RinkebyTestnet);
+    // // console.log(AllOpthys, 'AllOpthys');
+    // // const provider = new ethers.providers.Web3Provider(ethereum);
+    // // let address = opthysAddress(ChainId.RinkebyTestnet);
     const { data: opthys, mutate, isValidating } = useSWR([AllOpthys.ABI, AllOpthys.address, "all"]);
     console.log(opthys, isValidating, 'isValidating')
 
 
+    let OnlyOpthys = Opthys(ChainId.RinkebyTestnet);
+    // console.log(OnlyOpthys, 'OnlyOpthys');
+    // const { data: opthysNew, mutate, isValidating  } = useSWR([OnlyOpthys.ABI, OnlyOpthys.address, "createNewOpthy"]);
+    // console.log(opthysNew, 'opthysNew');
+
+    var date = new Date();
+    const sendData = {
+        iProvideLiquidy_: true,
+        feeAmountT0_: "1000000000000000000",
+        expiration_: Math.round(date.setDate(date.getDate() + 7))/1000,
+        token0_: "0x7af456bf0065aadab2e6bec6dad3731899550b84",
+        token1_: "0xc778417E063141139Fce010982780140Aa0cD5Ab",
+        rT0_: "10000000000000000000",
+        rT1_: "3333333333333333",
+        fundingAmountT0_: "10000000000000000000"
+    };
+    // const { data: createOpthy, mutate, isValidating  } = useSWR([OnlyOpthys.ABI, OnlyOpthys.address, "createNewOpthy", true, "1000000000000000000", Math.round(date.setDate(date.getDate() + 7))/1000, "0x7af456bf0065aadab2e6bec6dad3731899550b84", "0xc778417E063141139Fce010982780140Aa0cD5Ab", "10000000000000000000", "3333333333333333", "10000000000000000000"]);
+
+    // const { data: createOpthy, mutate, isValidating  } = useSWR([OnlyOpthys.ABI, OnlyOpthys.address, "createNewOpthy", sendData]);
+    // console.log(createOpthy, "createOpthy");
+
+
+
+
+
+
     React.useEffect(() => {
         // mutate(opthys, true);
+        // mutate(sendData, true);
     }, []);
 
     return (
