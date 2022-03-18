@@ -55,12 +55,6 @@ const Home: FC = () => {
     const signer = provider.getSigner();
 
 
-
-
-    // 0xc778417E063141139Fce010982780140Aa0cD5Ab -- ok
-    // 0x7af456bf0065aadab2e6bec6dad3731899550b84
-    // 0x265566d4365d80152515e800ca39424300374a83
-    // 0x74a3dbd5831f45cd0f3002bb87a59b7c15b1b5e6
     const createOpthy = async (): Promise<void> => {
         let token_1 = await signer.getAddress();
         // console.log(token_0);
@@ -82,9 +76,6 @@ const Home: FC = () => {
 
 
 
-
-
-
     const getOtpthys = async () => {
         let AllOpthys = OpthysView(ChainId.RinkebyTestnet);
         const contract = new ethers.Contract(AllOpthys.address, AllOpthys.ABI, signer);
@@ -96,11 +87,12 @@ const Home: FC = () => {
             console.log("Error: ", err)
         }
     }
-    let AllOpthys = OpthysView(ChainId.RinkebyTestnet);
-    const contract = new ethers.Contract(AllOpthys.address, AllOpthys.ABI, signer);
 
-    const { data, mutate, isValidating } = useSWR([contract, "all"], fetcher, { refreshInterval: 0, revalidateOnMount: false, revalidateOnFocus: false });
-    console.log(data, isValidating, 'anyValue')
+
+    // let AllOpthys = OpthysView(ChainId.RinkebyTestnet);
+    // const contract = new ethers.Contract(AllOpthys.address, AllOpthys.ABI, signer);
+    // const { data, mutate, isValidating } = useSWR([contract, "all"], fetcher, { refreshInterval: 0, revalidateOnMount: false, revalidateOnFocus: false });
+    // console.log(data, isValidating, 'anyValue')
 
 
 
