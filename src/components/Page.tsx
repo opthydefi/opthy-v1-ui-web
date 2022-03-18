@@ -7,7 +7,7 @@ import type {
   HTMLProps,
   ReactNode
 } from 'react';
-import { Helmet } from 'react-helmet';
+import { Helmet } from "react-helmet-async";
 import { useLocation } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import type { Theme } from 'src/types/theme';
@@ -16,7 +16,7 @@ import makeStyles from '@mui/styles/makeStyles';
 
 
 const useStyles = makeStyles((theme: Theme) => {
-  console.log(theme, 'theme');
+  // console.log(theme, 'theme');
   return {
     root: {
       backgroundColor: theme.palette.background.paper,
