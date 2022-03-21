@@ -13,7 +13,7 @@ import routes, { renderRoutes } from 'src/routes';
 import { SWRConfig } from "swr";
 import { Helmet, HelmetProvider } from 'react-helmet-async';
 import { EthereumProvider } from 'src/contexts/EthereumContext';
-// import { ContractsProvider } from 'src/contexts/ContractsContexts';
+import { ContractsProvider } from 'src/contexts/ContractsContexts';
 
 
 
@@ -31,25 +31,25 @@ function App() {
     <HelmetProvider>
       <ThemeProvider>
         <EthereumProvider>
-          {/* <ContractsProvider> */}
-          <SWRConfig value={swrConfig}>
-            <StylesProvider jss={jss}>
-              <LocalizationProvider dateAdapter={AdapterDateFns}>
+          <ContractsProvider>
+            <SWRConfig value={swrConfig}>
+              <StylesProvider jss={jss}>
+                <LocalizationProvider dateAdapter={AdapterDateFns}>
 
 
-                <BrowserRouter>
-                  <GlobalStyles />
-                  {/* <Web3ReactProvider getLibrary={getLibrary}>
+                  <BrowserRouter>
+                    <GlobalStyles />
+                    {/* <Web3ReactProvider getLibrary={getLibrary}>
               <Wallet />
             </Web3ReactProvider> */}
-                  {renderRoutes(routes)}
-                </BrowserRouter>
+                    {renderRoutes(routes)}
+                  </BrowserRouter>
 
 
-              </LocalizationProvider>
-            </StylesProvider>
-          </SWRConfig>
-          {/* </ContractsProvider> */}
+                </LocalizationProvider>
+              </StylesProvider>
+            </SWRConfig>
+          </ContractsProvider>
         </EthereumProvider>
       </ThemeProvider>
     </HelmetProvider>
