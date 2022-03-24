@@ -9,6 +9,7 @@ import { CardActionArea, CardActions, Box, Grid } from '@mui/material';
 import type { Theme } from 'src/types/theme';
 import makeStyles from '@mui/styles/makeStyles';
 import Divider from '@mui/material/Divider';
+import moment from 'moment';
 
 const useStyles = makeStyles((theme: Theme) => ({
     root: {
@@ -26,14 +27,54 @@ const useStyles = makeStyles((theme: Theme) => ({
     }
 }));
 
-
-
 interface CardProps {
     data: any;
 }
 
 export const OpthyCard: FC<CardProps> = ({ data }: CardProps) => {
     const classes = useStyles();
+
+    const [btcTousd, setBtcTousd] = React.useState(0);
+    const [daiTousd, setDaiTousd] = React.useState(0);
+
+    React.useEffect(() => {
+        getBTCToUSD();
+        async function getBTCToUSD(){
+            const result = await (await fetch('https://api.diadata.org/v1/quotation/BTC', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })).json();
+            setBtcTousd(result.Price);
+        }
+    });
+
+    React.useEffect(() => {
+        getDAIToUSD();
+        async function getDAIToUSD(){
+            const result = await (await fetch('https://api.diadata.org/v1/quotation/DAI', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })).json();
+            setDaiTousd(result.Price);
+        }
+    });
+
+
+    const now = Math.floor(Date.now() / 1000);
+    const expire = parseInt(data.expiration._hex);
+    let delta = expire - now;
+    const days = Math.floor(delta / 86400);
+    delta -= days * 86400;
+    const hours = Math.floor(delta / 3600) % 24;
+    delta -= hours * 3600;
+    const minutes = Math.floor(delta / 60) % 60;
+    delta -= minutes * 60;
+    const seconds = delta % 60;
+
     return (
         <Card sx={{ m: 1, borderRadius: '10px' }}>
             {/* <CardActionArea> */}
@@ -60,17 +101,18 @@ export const OpthyCard: FC<CardProps> = ({ data }: CardProps) => {
                         <Typography variant="body2" color="text.secondary">
                             Fixed Swap Rate: 
                             <Box p={1}>
-                                <Typography gutterBottom variant="body2">1 BTC = 60k DAI</Typography>
-                                <Typography gutterBottom variant="body2">2 DAI = 0.001 BTC</Typography>
+                                {/* <Typography gutterBottom variant="body2">1 BTC = 60k DAI</Typography>
+                                <Typography gutterBottom variant="body2">2 DAI = 0.001 BTC</Typography> */}
+                                <Typography gutterBottom variant="body2">{parseInt(data.rT0._hex)} DAI</Typography>
+                                <Typography gutterBottom variant="body2">{parseInt(data.rT1._hex)} BTC</Typography>
                             </Box>
                         </Typography>
                     </Grid>
                     <Grid item xs={6}>
                         <Typography variant="body2" color="text.secondary">
                             Expires In: 
-                            <Typography gutterBottom variant="body2">120 days 3h. 10m. 2s.</Typography>
+                            <Typography gutterBottom variant="body2">{days +' days ' + hours + 'h. ' + minutes + 'm. ' + seconds + 's.'}</Typography>
                         </Typography>
-                        
                     </Grid>
                 </Grid>
                 <Grid container spacing={2} mt={1}>
@@ -78,8 +120,8 @@ export const OpthyCard: FC<CardProps> = ({ data }: CardProps) => {
                         <Typography variant="body2" color="text.secondary">
                             Current: 
                             <Box p={1}>
-                                <Typography gutterBottom variant="body2">9.11111111 BTC</Typography>
-                                <Typography gutterBottom variant="body2"> 53,333.33 DAI</Typography>
+                                <Typography gutterBottom variant="body2">{parseInt(data.balanceT0._hex)} DAI</Typography>
+                                <Typography gutterBottom variant="body2"> {parseInt(data.balanceT0._hex)} DAI</Typography>
                             </Box>
                         </Typography>
                     </Grid>
@@ -87,8 +129,8 @@ export const OpthyCard: FC<CardProps> = ({ data }: CardProps) => {
                         <Typography variant="body2" color="text.secondary">
                             &nbsp;
                             <Box mt={1}>
-                                <Typography variant="body2" color="text.secondary">~ $610,444.44 USD</Typography>
-                                <Typography variant="body2" color="text.secondary">~ $53,333.33 USD</Typography>
+                                <Typography variant="body2" color="text.secondary">~ ${(parseInt(data.balanceT0._hex) * daiTousd).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,')} USD</Typography>
+                                <Typography variant="body2" color="text.secondary">~ ${(parseInt(data.balanceT0._hex) * daiTousd).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,')} USD</Typography>
                             </Box>
                         </Typography>
                     </Grid>
@@ -98,8 +140,8 @@ export const OpthyCard: FC<CardProps> = ({ data }: CardProps) => {
                         <Typography variant="body2" color="text.secondary">
                             Liquidity Limit:
                             <Box p={1}>
-                                <Typography gutterBottom variant="body2">10.00 BTC</Typography>
-                                <Typography gutterBottom variant="body2"> 600,000.00 DAI</Typography>
+                                <Typography gutterBottom variant="body2">{parseInt(data.balanceT0._hex)} DAI</Typography>
+                                <Typography gutterBottom variant="body2"> {parseInt(data.balanceT0._hex)} DAI</Typography>
                             </Box>
                         </Typography>
                     </Grid>
@@ -107,19 +149,21 @@ export const OpthyCard: FC<CardProps> = ({ data }: CardProps) => {
                         <Typography variant="body2" color="text.secondary">
                             &nbsp;
                             <Box mt={1}>
-                                <Typography gutterBottom variant="body2" color="text.secondary">~ $610,444.44 USD</Typography>
-                                <Typography gutterBottom variant="body2" color="text.secondary">~ $53,333.33 USD</Typography>
+                                <Typography gutterBottom variant="body2" color="text.secondary">~ ${(parseInt(data.balanceT0._hex) * daiTousd).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,')} USD</Typography>
+                                <Typography gutterBottom variant="body2" color="text.secondary">~ ${(parseInt(data.balanceT0._hex) * daiTousd).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,')} USD</Typography>
                             </Box>
                         </Typography>
                     </Grid>
                 </Grid>
+                { parseInt(data.liquidityProviderFeeAmount._hex) > 0 ? 
+                <>
                 <Divider/>
                 <Grid container spacing={2} mt={0}>
                     <Grid item xs={6}>
                         <Typography variant="body2" color="text.secondary">
                             Get unlimited swaps for:
                             <Box p={1}>
-                                <Typography gutterBottom variant="body2">2.111111 BTC</Typography>
+                                <Typography gutterBottom variant="body2">{ parseInt(data.liquidityProviderFeeAmount._hex) } DAI</Typography>
                             </Box>
                         </Typography>
                     </Grid>
@@ -127,12 +171,12 @@ export const OpthyCard: FC<CardProps> = ({ data }: CardProps) => {
                         <Typography variant="body2" color="text.secondary">
                             &nbsp;
                             <Box mt={1}>
-                                <Typography gutterBottom variant="body2" color="text.secondary">~ $141,444.44 USD</Typography>
-                            </Box>                          
+                                <Typography gutterBottom variant="body2" color="text.secondary">~ ${(parseInt(data.liquidityProviderFeeAmount._hex) * daiTousd).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,')} USD</Typography>
+                            </Box>                
                             
                         </Typography>
                     </Grid>
-                </Grid>
+                </Grid></> : "" }
                 </CardContent>
             {/* </CardActionArea> */}
             <CardActions>

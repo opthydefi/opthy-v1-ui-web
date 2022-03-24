@@ -30,6 +30,7 @@
     "jss": "^10.9.0",
     "jss-rtl": "^0.3.0",
     "lodash": "^4.17.21",
+    "moment": "^2.29.1",
     "nprogress": "^0.2.0",
     "opthy-v1-core": "github:opthydefi/opthy-v1-core",
     "react": "^17.0.2",

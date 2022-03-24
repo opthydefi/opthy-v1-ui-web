@@ -78,7 +78,7 @@ const Contract: FC = () => {
             </Box>
             <Box m={2}>
                 <Typography variant="h6">Swap at the Fixed Rate?</Typography>
-                <Grid container spacing={2}>                   
+                <Grid container spacing={2}>              
                     {/* Opthy card loop  */}
                     <Grid item xs={12} md={6}>
                         <Card sx={{ m: 1, borderRadius: '10px' }}>
