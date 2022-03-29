@@ -10,6 +10,8 @@ import type { Theme } from 'src/types/theme';
 import makeStyles from '@mui/styles/makeStyles';
 import Divider from '@mui/material/Divider';
 import moment from 'moment';
+import { formatUnits } from '@ethersproject/units';
+import { ERC20_ADDRESS_CURRENCY } from "src/utils/constants";
 
 const useStyles = makeStyles((theme: Theme) => ({
     root: {
@@ -33,26 +35,38 @@ interface CardProps {
 
 export const OpthyCard: FC<CardProps> = ({ data }: CardProps) => {
     const classes = useStyles();
-
-    const [btcTousd, setBtcTousd] = React.useState(0);
+    const [currentAmount1, setCurrentAmount1] = React.useState(0);
+    const [currentAmount2, setCurrentAmount2] = React.useState(0);
+    
     const [daiTousd, setDaiTousd] = React.useState(0);
 
-    React.useEffect(() => {
-        getBTCToUSD();
-        async function getBTCToUSD(){
-            const result = await (await fetch('https://api.diadata.org/v1/quotation/BTC', {
+    const CURRENCY_CONVERT = (convertFrom: string) => {
+        return new Promise(async (resolve, reject) => {
+            // console.log(convertFrom);
+            const result = await (await fetch('https://api.diadata.org/v1/quotation/' + convertFrom, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
                 }
             })).json();
-            setBtcTousd(result.Price);
-        }
-    });
+            resolve(result.Price)
+        })
+      }
 
     React.useEffect(() => {
         getDAIToUSD();
         async function getDAIToUSD(){
+            const myResult: any = await CURRENCY_CONVERT(ERC20_ADDRESS_CURRENCY[data.token0]);
+            const balance: any = formatUnits(data.balanceT0);
+            const currAmount: any = (Number(balance) * myResult).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,')
+            setCurrentAmount1(currAmount);
+
+            const myResult2: any = await CURRENCY_CONVERT(ERC20_ADDRESS_CURRENCY[data.token1]);
+            const balance2: any = formatUnits(data.balanceT1);
+            const currAmount2: any = (Number(balance2) * myResult2).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,')
+            setCurrentAmount2(currAmount2)
+
+            // console.log("myResult = ", myResult)
             const result = await (await fetch('https://api.diadata.org/v1/quotation/DAI', {
                 method: 'GET',
                 headers: {
@@ -62,7 +76,6 @@ export const OpthyCard: FC<CardProps> = ({ data }: CardProps) => {
             setDaiTousd(result.Price);
         }
     });
-
 
     const now = Math.floor(Date.now() / 1000);
     const expire = parseInt(data.expiration._hex);
@@ -83,7 +96,7 @@ export const OpthyCard: FC<CardProps> = ({ data }: CardProps) => {
                 {/* <Box> */}
                     <Grid container>
                         <Grid item xs={1.5}>
-                            <Typography gutterBottom variant="h5" component="div">BTC</Typography>
+                            <Typography gutterBottom variant="h5" component="div">DAI</Typography>
                         </Grid>
                         <Grid item xs={6} mt={2}>
                             <Divider light={true} sx={{ borderBottomWidth: 10, borderRadius: 2 }} />
@@ -92,7 +105,7 @@ export const OpthyCard: FC<CardProps> = ({ data }: CardProps) => {
                             <Divider sx={{ borderBottomWidth: 10, borderRadius: 2 }} />
                         </Grid>
                         <Grid item xs={1.5}>
-                            <Typography align="right" gutterBottom variant="h5" component="div">DAI</Typography>
+                            <Typography align="right" gutterBottom variant="h5" component="div">ETH</Typography>
                         </Grid>
                     </Grid>
                 {/* </Box> */}
@@ -103,8 +116,8 @@ export const OpthyCard: FC<CardProps> = ({ data }: CardProps) => {
                             <Box p={1}>
                                 {/* <Typography gutterBottom variant="body2">1 BTC = 60k DAI</Typography>
                                 <Typography gutterBottom variant="body2">2 DAI = 0.001 BTC</Typography> */}
-                                <Typography gutterBottom variant="body2">{parseInt(data.rT0._hex)} DAI</Typography>
-                                <Typography gutterBottom variant="body2">{parseInt(data.rT1._hex)} BTC</Typography>
+                                <Typography gutterBottom variant="body2">{formatUnits(data.rT0)} {ERC20_ADDRESS_CURRENCY[data.token0]}</Typography>
+                                <Typography gutterBottom variant="body2">{formatUnits(data.rT1)} {ERC20_ADDRESS_CURRENCY[data.token1]}</Typography>
                             </Box>
                         </Typography>
                     </Grid>
@@ -120,8 +133,8 @@ export const OpthyCard: FC<CardProps> = ({ data }: CardProps) => {
                         <Typography variant="body2" color="text.secondary">
                             Current: 
                             <Box p={1}>
-                                <Typography gutterBottom variant="body2">{parseInt(data.balanceT0._hex)} DAI</Typography>
-                                <Typography gutterBottom variant="body2"> {parseInt(data.balanceT0._hex)} DAI</Typography>
+                                <Typography gutterBottom variant="body2">{formatUnits(data.balanceT0)} {ERC20_ADDRESS_CURRENCY[data.token0]}</Typography>
+                                <Typography gutterBottom variant="body2"> {formatUnits(data.balanceT1._hex)} {ERC20_ADDRESS_CURRENCY[data.token1]}</Typography>
                             </Box>
                         </Typography>
                     </Grid>
@@ -129,8 +142,8 @@ export const OpthyCard: FC<CardProps> = ({ data }: CardProps) => {
                         <Typography variant="body2" color="text.secondary">
                             &nbsp;
                             <Box mt={1}>
-                                <Typography variant="body2" color="text.secondary">~ ${(parseInt(data.balanceT0._hex) * daiTousd).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,')} USD</Typography>
-                                <Typography variant="body2" color="text.secondary">~ ${(parseInt(data.balanceT0._hex) * daiTousd).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,')} USD</Typography>
+                                <Typography variant="body2" color="text.secondary">~ ${currentAmount1} USD</Typography>
+                                <Typography variant="body2" color="text.secondary">~ ${currentAmount2} USD</Typography>
                             </Box>
                         </Typography>
                     </Grid>
@@ -140,8 +153,8 @@ export const OpthyCard: FC<CardProps> = ({ data }: CardProps) => {
                         <Typography variant="body2" color="text.secondary">
                             Liquidity Limit:
                             <Box p={1}>
-                                <Typography gutterBottom variant="body2">{parseInt(data.balanceT0._hex)} DAI</Typography>
-                                <Typography gutterBottom variant="body2"> {parseInt(data.balanceT0._hex)} DAI</Typography>
+                                <Typography gutterBottom variant="body2">{formatUnits(data.balanceT0)} {ERC20_ADDRESS_CURRENCY[data.token0]}</Typography>
+                                <Typography gutterBottom variant="body2"> {formatUnits(data.balanceT1)} {ERC20_ADDRESS_CURRENCY[data.token1]}</Typography>
                             </Box>
                         </Typography>
                     </Grid>
@@ -149,8 +162,8 @@ export const OpthyCard: FC<CardProps> = ({ data }: CardProps) => {
                         <Typography variant="body2" color="text.secondary">
                             &nbsp;
                             <Box mt={1}>
-                                <Typography gutterBottom variant="body2" color="text.secondary">~ ${(parseInt(data.balanceT0._hex) * daiTousd).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,')} USD</Typography>
-                                <Typography gutterBottom variant="body2" color="text.secondary">~ ${(parseInt(data.balanceT0._hex) * daiTousd).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,')} USD</Typography>
+                                <Typography gutterBottom variant="body2" color="text.secondary">~ ${currentAmount1} USD</Typography>
+                                <Typography gutterBottom variant="body2" color="text.secondary">~ ${currentAmount2} USD</Typography>
                             </Box>
                         </Typography>
                     </Grid>
@@ -163,7 +176,7 @@ export const OpthyCard: FC<CardProps> = ({ data }: CardProps) => {
                         <Typography variant="body2" color="text.secondary">
                             Get unlimited swaps for:
                             <Box p={1}>
-                                <Typography gutterBottom variant="body2">{ parseInt(data.liquidityProviderFeeAmount._hex) } DAI</Typography>
+                                <Typography gutterBottom variant="body2">{ parseInt(data.liquidityProviderFeeAmount._hex) } {ERC20_ADDRESS_CURRENCY[data.liquidityProviderFeeToken]}</Typography>
                             </Box>
                         </Typography>
                     </Grid>
