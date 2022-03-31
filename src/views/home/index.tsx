@@ -5,7 +5,7 @@ import { Grid, Box, Typography, Container } from '@mui/material';
 import { OpthyCard } from "src/components/Card";
 import makeStyles from '@mui/styles/makeStyles';
 import useSWR from 'swr';
-import useSWRImmutable from 'swr';
+import useSWRImmutable from 'swr/immutable';
 import { BigNumber, ethers } from 'ethers';
 import { name2ABI } from "src/utils/helpers";
 import { ChainId, ERC20, OpthyABI, Opthys, OpthysView } from 'opthy-v1-core';
@@ -37,8 +37,7 @@ const Home: FC = () => {
     let OnlyOpthys = Opthys(ChainId.RinkebyTestnet);
 
     const { data: opthys, mutate, isValidating } = useSWR([AllOpthys.ABI, AllOpthys.address, "all"]);
-    console.log(opthys, isValidating, 'isValidating');
-    // console.log("opthyData = ", formatUnits(opthys[6].token0.balance, opthys[6].token0.decimals));
+    // console.log(opthys, isValidating, 'isValidating');
 
 
     const createOpthy = async (): Promise<void> => {
@@ -87,11 +86,12 @@ const Home: FC = () => {
             <Box m={2}>
                 <Grid container spacing={2}>
                     {/* Opthy card loop  */}
-                    { opthys && opthys.length > 0 ?
+                    { opthys?.length > 0 ?
                     opthys.map((opthyData: any, index: any) => {
                         if(index === 6) {
                             // formatUnits(opthyData.token0.balance, opthyData.token0.decimals)
-                            console.log("opthyData = ", formatUnits(opthyData.balanceT1));
+                            // console.log("opthyData = ", formatUnits(opthyData.balanceT1));
+                            
                         }
                         return (
                             <Grid item xs={12} md={4} key={index}>

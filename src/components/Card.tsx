@@ -9,9 +9,13 @@ import { CardActionArea, CardActions, Box, Grid } from '@mui/material';
 import type { Theme } from 'src/types/theme';
 import makeStyles from '@mui/styles/makeStyles';
 import Divider from '@mui/material/Divider';
-import moment from 'moment';
 import { formatUnits } from '@ethersproject/units';
-import { ERC20_ADDRESS_CURRENCY } from "src/utils/constants";
+import { useERC20Metadata, CURRENCY_CONVERT } from "src/utils/helpers";
+import { useEthersState } from 'src/contexts/EthereumContext';
+import {ethers} from "ethers";
+
+declare let window:any
+
 
 const useStyles = makeStyles((theme: Theme) => ({
     root: {
@@ -35,50 +39,17 @@ interface CardProps {
 
 export const OpthyCard: FC<CardProps> = ({ data }: CardProps) => {
     const classes = useStyles();
-    const [currentAmount1, setCurrentAmount1] = React.useState(0);
-    const [currentAmount2, setCurrentAmount2] = React.useState(0);
+    const { userCurrentAddress } = useEthersState();
+    const [balance, setBalance] = React.useState<string | undefined>()
+
+    let result: any = {}
+    const { opthy: contractAddress, expiration, token0, token1, balanceT0, balanceT1, rT0, rT1 } = data;
+    // console.log(contractAddress, expiration, token0, token1, balanceT0, balanceT1, rT0, rT1);
+    result.address = contractAddress;
     
-    const [daiTousd, setDaiTousd] = React.useState(0);
-
-    const CURRENCY_CONVERT = (convertFrom: string) => {
-        return new Promise(async (resolve, reject) => {
-            // console.log(convertFrom);
-            const result = await (await fetch('https://api.diadata.org/v1/quotation/' + convertFrom, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                }
-            })).json();
-            resolve(result.Price)
-        })
-      }
-
-    React.useEffect(() => {
-        getDAIToUSD();
-        async function getDAIToUSD(){
-            const myResult: any = await CURRENCY_CONVERT(ERC20_ADDRESS_CURRENCY[data.token0]);
-            const balance: any = formatUnits(data.balanceT0);
-            const currAmount: any = (Number(balance) * myResult).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,')
-            setCurrentAmount1(currAmount);
-
-            const myResult2: any = await CURRENCY_CONVERT(ERC20_ADDRESS_CURRENCY[data.token1]);
-            const balance2: any = formatUnits(data.balanceT1);
-            const currAmount2: any = (Number(balance2) * myResult2).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,')
-            setCurrentAmount2(currAmount2)
-
-            // console.log("myResult = ", myResult)
-            const result = await (await fetch('https://api.diadata.org/v1/quotation/DAI', {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                }
-            })).json();
-            setDaiTousd(result.Price);
-        }
-    });
-
+    // Expire Calculation
     const now = Math.floor(Date.now() / 1000);
-    const expire = parseInt(data.expiration._hex);
+    const expire = parseInt(expiration._hex);
     let delta = expire - now;
     const days = Math.floor(delta / 86400);
     delta -= days * 86400;
@@ -87,6 +58,46 @@ export const OpthyCard: FC<CardProps> = ({ data }: CardProps) => {
     const minutes = Math.floor(delta / 60) % 60;
     delta -= minutes * 60;
     const seconds = delta % 60;
+    result.expiration = days +' days ' + hours + 'h. ' + minutes + 'm. ' + seconds + 's.';
+
+    // User Balance
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    provider.getBalance(userCurrentAddress)
+    .then((result)=> {
+        setBalance(ethers.utils.formatEther(result))
+    });
+    result.currencyBalance = balance;
+
+    // token0
+    let token_0: any = {};
+    token_0 = useERC20Metadata(token0);
+    token_0.address = token0;
+    token_0.balance = balanceT0;
+    token_0.r = rT0;
+    result.token0 = token_0;
+
+    // token1
+    let token_1: any = {};
+    token_1 = useERC20Metadata(token1);
+    token_1.address = token1;
+    token_1.balance = balanceT1;
+    token_1.r = rT1;
+    result.token1 = token_1;
+
+    // Swap rate
+    result.fixedSwapRate0 = Number(formatUnits(rT1, token_1.decimals)) / Number(formatUnits(rT0, token_0.decimals));
+    result.fixedSwapRate1 = Number(formatUnits(rT0, token_0.decimals)) / Number(formatUnits(rT1, token_1.decimals));
+
+    // token0, token1 currency convert
+    const convertToken0Cur = CURRENCY_CONVERT(result.token0.symbol);
+    const convertToken1Cur = CURRENCY_CONVERT(result.token1.symbol);
+
+    const newCal = Number(formatUnits(balanceT0, token_0.decimals)) / Number(formatUnits(rT0, token_0.decimals));
+    const newCal2 = Number(formatUnits(balanceT1, token_1.decimals)) / Number(formatUnits(rT1, token_1.decimals));
+    // console.log("newCal = ", formatUnits(balanceT1, token_1.decimals), formatUnits(rT1, token_1.decimals), newCal, newCal2);
+    const [daiTousd, setDaiTousd] = React.useState(0);
+
+    
 
     return (
         <Card sx={{ m: 1, borderRadius: '10px' }}>
@@ -114,17 +125,15 @@ export const OpthyCard: FC<CardProps> = ({ data }: CardProps) => {
                         <Typography variant="body2" color="text.secondary">
                             Fixed Swap Rate: 
                             <Box p={1}>
-                                {/* <Typography gutterBottom variant="body2">1 BTC = 60k DAI</Typography>
-                                <Typography gutterBottom variant="body2">2 DAI = 0.001 BTC</Typography> */}
-                                <Typography gutterBottom variant="body2">{formatUnits(data.rT0)} {ERC20_ADDRESS_CURRENCY[data.token0]}</Typography>
-                                <Typography gutterBottom variant="body2">{formatUnits(data.rT1)} {ERC20_ADDRESS_CURRENCY[data.token1]}</Typography>
+                                <Typography gutterBottom variant="body2">1 {result.token0.symbol} {result.fixedSwapRate0 < 0.001 ? '<' : '=' } {result.fixedSwapRate0 < 0.001 ? 0.001: result.fixedSwapRate0} {result.token1.symbol}</Typography>
+                                <Typography gutterBottom variant="body2">1 {result.token1.symbol} = {result.fixedSwapRate1} {result.token0.symbol}</Typography>
                             </Box>
                         </Typography>
                     </Grid>
                     <Grid item xs={6}>
                         <Typography variant="body2" color="text.secondary">
                             Expires In: 
-                            <Typography gutterBottom variant="body2">{days +' days ' + hours + 'h. ' + minutes + 'm. ' + seconds + 's.'}</Typography>
+                            <Typography gutterBottom variant="body2">{result.expiration}</Typography>
                         </Typography>
                     </Grid>
                 </Grid>
@@ -133,8 +142,8 @@ export const OpthyCard: FC<CardProps> = ({ data }: CardProps) => {
                         <Typography variant="body2" color="text.secondary">
                             Current: 
                             <Box p={1}>
-                                <Typography gutterBottom variant="body2">{formatUnits(data.balanceT0)} {ERC20_ADDRESS_CURRENCY[data.token0]}</Typography>
-                                <Typography gutterBottom variant="body2"> {formatUnits(data.balanceT1._hex)} {ERC20_ADDRESS_CURRENCY[data.token1]}</Typography>
+                                <Typography gutterBottom variant="body2">{Number(formatUnits(balanceT0, result.token0.decimals))} {result.token0.symbol}</Typography>
+                                <Typography gutterBottom variant="body2"> {Number(formatUnits(data.balanceT1, result.token1.decimals))} {result.token1.symbol}</Typography>
                             </Box>
                         </Typography>
                     </Grid>
@@ -142,8 +151,8 @@ export const OpthyCard: FC<CardProps> = ({ data }: CardProps) => {
                         <Typography variant="body2" color="text.secondary">
                             &nbsp;
                             <Box mt={1}>
-                                <Typography variant="body2" color="text.secondary">~ ${currentAmount1} USD</Typography>
-                                <Typography variant="body2" color="text.secondary">~ ${currentAmount2} USD</Typography>
+                                <Typography variant="body2" color="text.secondary">~ ${convertToken0Cur?.currencyIsValidating ? 0 : (Number(formatUnits(balanceT0, result.token0.decimals)) * convertToken0Cur?.convertResult?.Price).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,')} USD</Typography>
+                                <Typography variant="body2" color="text.secondary">~ ${convertToken1Cur?.currencyIsValidating ? 0 : (Number(formatUnits(balanceT1, result.token1.decimals)) * convertToken1Cur?.convertResult?.Price).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,')} USD</Typography>
                             </Box>
                         </Typography>
                     </Grid>
@@ -153,8 +162,8 @@ export const OpthyCard: FC<CardProps> = ({ data }: CardProps) => {
                         <Typography variant="body2" color="text.secondary">
                             Liquidity Limit:
                             <Box p={1}>
-                                <Typography gutterBottom variant="body2">{formatUnits(data.balanceT0)} {ERC20_ADDRESS_CURRENCY[data.token0]}</Typography>
-                                <Typography gutterBottom variant="body2"> {formatUnits(data.balanceT1)} {ERC20_ADDRESS_CURRENCY[data.token1]}</Typography>
+                                <Typography gutterBottom variant="body2">{Number(formatUnits(rT0, result.token0.decimals))} {result.token0.symbol}</Typography>
+                                <Typography gutterBottom variant="body2"> {Number(formatUnits(rT1, result.token1.decimals))} {result.token1.symbol}</Typography>
                             </Box>
                         </Typography>
                     </Grid>
@@ -162,13 +171,13 @@ export const OpthyCard: FC<CardProps> = ({ data }: CardProps) => {
                         <Typography variant="body2" color="text.secondary">
                             &nbsp;
                             <Box mt={1}>
-                                <Typography gutterBottom variant="body2" color="text.secondary">~ ${currentAmount1} USD</Typography>
-                                <Typography gutterBottom variant="body2" color="text.secondary">~ ${currentAmount2} USD</Typography>
+                                <Typography gutterBottom variant="body2" color="text.secondary">~ ${convertToken0Cur?.currencyIsValidating ? 0 : (Number(formatUnits(rT0, result.token0.decimals)) * convertToken0Cur?.convertResult?.Price).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,')} USD</Typography>
+                                <Typography gutterBottom variant="body2" color="text.secondary">~ ${convertToken1Cur?.currencyIsValidating ? 0 : (Number(formatUnits(rT1, result.token1.decimals)) * convertToken1Cur?.convertResult?.Price).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,')} USD</Typography>
                             </Box>
                         </Typography>
                     </Grid>
                 </Grid>
-                { parseInt(data.liquidityProviderFeeAmount._hex) > 0 ? 
+                { Number(formatUnits(data.liquidityProviderFeeAmount, 18)) > 0 ? 
                 <>
                 <Divider/>
                 <Grid container spacing={2} mt={0}>
@@ -176,7 +185,7 @@ export const OpthyCard: FC<CardProps> = ({ data }: CardProps) => {
                         <Typography variant="body2" color="text.secondary">
                             Get unlimited swaps for:
                             <Box p={1}>
-                                <Typography gutterBottom variant="body2">{ parseInt(data.liquidityProviderFeeAmount._hex) } {ERC20_ADDRESS_CURRENCY[data.liquidityProviderFeeToken]}</Typography>
+                                <Typography gutterBottom variant="body2">{ parseInt(data.liquidityProviderFeeAmount._hex) } DAI</Typography>
                             </Box>
                         </Typography>
                     </Grid>
@@ -185,8 +194,7 @@ export const OpthyCard: FC<CardProps> = ({ data }: CardProps) => {
                             &nbsp;
                             <Box mt={1}>
                                 <Typography gutterBottom variant="body2" color="text.secondary">~ ${(parseInt(data.liquidityProviderFeeAmount._hex) * daiTousd).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,')} USD</Typography>
-                            </Box>                
-                            
+                            </Box>
                         </Typography>
                     </Grid>
                 </Grid></> : "" }

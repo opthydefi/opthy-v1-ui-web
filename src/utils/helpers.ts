@@ -1,6 +1,13 @@
 import upperFirst from 'lodash/upperFirst';
 import camelCase from 'lodash/camelCase';
 import { CODE_VARIANTS, LANGUAGES } from './constants';
+
+import useSWRImmutable from 'swr/immutable';
+import { ChainId, ERC20 } from 'opthy-v1-core';
+// import { useWeb3React } from '@web3-react/core';
+// import { AddressTranslator } from 'nervos-godwoken-integration';
+import { getAddress } from '@ethersproject/address';
+import useSWR from 'swr';
 // import { opthysAddress, chainNameIDs, contract2ABI } from "opthy-v1-core";
 
 
@@ -292,4 +299,83 @@ export const name2ABI = (contractName: string) => {
   // if (contractName === "Opthys") {
   //   return OPTHYSABI.abi as any;
   // }
+}
+
+
+export const NervosChainId = 71393;
+
+export const isNervos = (chainId: any) => (Number(chainId) == NervosChainId);
+
+// export const usePolyWeb3React = () => {
+//   // const result: any = useWeb3React();
+//   // console.log("result =", result);
+//   if (result.account) {
+//       if (isNervos(result.chainId)) {
+//           // const addressTranslator = new AddressTranslator();
+//           // const polyaccount = addressTranslator.ethAddressToGodwokenShortAddress(result.account);
+//           // result.polyaccount = getAddress(polyaccount);//transform to Checksum Address
+//       } else {
+//           result.polyaccount = result.account;
+//       }
+//   }
+
+//   return result
+// }
+const ERCMetaData = ERC20(ChainId.RinkebyTestnet);
+// console.log("ERCMetaData = ", ERCMetaData);
+export const useERC20Metadata = (ERC20Address: string) => {
+
+  let { data: name } = useSWRImmutable([ERCMetaData.ABI, ERC20Address, 'name']);
+  if (!name) {
+      name = ERC20Address.slice(-5);
+  }
+
+  let { data: symbol } = useSWRImmutable([ERCMetaData.ABI, ERC20Address, 'symbol']);
+  if (!symbol) {
+      symbol = ERC20Address.slice(-5);
+  }
+
+  let { data: decimals } = useSWRImmutable([ERCMetaData.ABI, ERC20Address, 'decimals']);
+  if (!decimals) {
+      decimals = 18;
+  }
+
+  // const whitelist = useERC20TOKENSWhitelist()
+  // const isWhitelisted = whitelist ? whitelist.has(ERC20Address) : false;
+
+  // const logo = useERC20Logo(symbol)
+
+  const ABI = ERC20
+
+  //Add other ERC20 metadata here///////////////////////////
+
+  return { name, symbol, decimals, ABI }
+}
+
+// export const ERC20Balance = (ERC20Address: string) => {
+  
+//   const { data: blanace, error, mutate, isValidating } = useSWR([ERCMetaData.ABI, ERC20Address, "balanceOf", "0x9d23e5D38C31DF9FF11512e40f43a2a4Fa7a3b41" ]);
+//   console.log("error = ", error);
+//   return { blanace }
+// }
+
+// const useERC20TOKENSWhitelist = () => {
+//   const { chainId } = useWeb3React()
+//   if (chainId == NervosChainId) {
+//       return new Set([
+//           "0x034f40c41Bb7D27965623f7bb136CC44D78be5E7", // ckETH
+//           "0xC818545C50a0E2568E031Ef9150849b396992880", // ckDAI
+//           "0x1b98136005d568B23b7328F279948648992e1fD2", // ckUSDC
+//           "0xEabAe0083967F2360848efC65C9c967135e80EE4", // ckUSDT
+//       ])
+//   }
+//   if (chainId == RinkebyChainId) {
+//       return new Set();
+//   }
+// }
+
+export const CURRENCY_CONVERT = (convertFrom: string) => {
+    const fetcher = (url: RequestInfo) => fetch(url).then(r => r.json())
+    let { data: convertResult, error: currencyError, mutate: currencyMutate, isValidating: currencyIsValidating } = useSWR('https://api.diadata.org/v1/quotation/' + ((convertFrom.length !== 5) ? convertFrom : "DAI"), fetcher)
+    return { convertResult, currencyError, currencyMutate, currencyIsValidating };
 }
