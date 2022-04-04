@@ -55,6 +55,7 @@ const useStyles = makeStyles((theme: Theme) => ({
 const TopBar: FC<TopBarProps> = ({ className, ...rest }) => {
   const classes = useStyles();
   const { connectWallet, userCurrentAddress, isMetamaskInstall } = useEthersState();
+  // console.log("userCurrentAddress = ",isMetamaskInstall, userCurrentAddress);
 
   let history = useHistory();
   const [openRegisterButton, setOpenRegisterButton] = React.useState(false);

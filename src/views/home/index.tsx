@@ -1,16 +1,16 @@
 import React, { FC } from "react";
 import Page from 'src/components/Page';
 import type { Theme } from 'src/types/theme';
-import { Grid, Box, Typography, Container } from '@mui/material';
+import { Grid, Box, Typography, Container, Button } from '@mui/material';
+import { useEthersState } from 'src/contexts/EthereumContext';
 import { OpthyCard } from "src/components/Card";
 import makeStyles from '@mui/styles/makeStyles';
 import useSWR from 'swr';
-import useSWRImmutable from 'swr/immutable';
 import { BigNumber, ethers } from 'ethers';
 import { name2ABI } from "src/utils/helpers";
 import { ChainId, ERC20, OpthyABI, Opthys, OpthysView } from 'opthy-v1-core';
 // import { OPTHY_NETWORKS } from "src/utils/constants";
-import { formatUnits, parseUnits } from '@ethersproject/units';
+// import { formatUnits, parseUnits } from '@ethersproject/units';
 
 const useStyles = makeStyles((theme: Theme) => ({
     customContainer: {  
@@ -26,15 +26,17 @@ const useStyles = makeStyles((theme: Theme) => ({
 declare const window: any;
 
 const Home: FC = () => {
+    const { userCurrentAddress, connectWallet } = useEthersState();
     const classes = useStyles();
     let { ethereum } = window;
-
+    // console.log("userCurrentAddress = ",isMetamaskInstall, userCurrentAddress);
     const provider = new ethers.providers.Web3Provider(ethereum);
     const signer = provider.getSigner();
 
     let AllOpthys = OpthysView(ChainId.RinkebyTestnet);
     // console.log("AllOpthys = ", AllOpthys)
     let OnlyOpthys = Opthys(ChainId.RinkebyTestnet);
+    // console.log("OnlyOpthys = ", OnlyOpthys)
 
     const { data: opthys, mutate, isValidating } = useSWR([AllOpthys.ABI, AllOpthys.address, "all"]);
     // console.log(opthys, isValidating, 'isValidating');
@@ -63,45 +65,52 @@ const Home: FC = () => {
         // mutate(sendData, true);
     }, []);
 
-
-
-
-
-
     if(isValidating === true){
         return <Typography className={classes.loadingClass} gutterBottom variant="h5" component="div">Loading...</Typography>
     }
     return (
         <Page title="Home page">
             <Container className={classes.customContainer}>
-            
-            <Box m={2} mt={10}>
-                <Grid container spacing={2}>
-                    <Grid item xs={12} m={1}>
-                        <Typography variant="h2">Buy on Opthy</Typography>
-                        <Typography variant="body2">Buy = Get:Fixed Swap Rate + Liquidity + Unlimited Swaps</Typography>
+                { userCurrentAddress === "" ?
+                <Box m={2} mt={20} textAlign='center'>
+                    <Button
+                        color='primary'
+                        variant='outlined'
+                        onClick={connectWallet}
+                        >
+                        Please Login
+                    </Button>
+                </Box>
+                : <>
+                <Box m={2} mt={10}>
+                    <Grid container spacing={2}>
+                        <Grid item xs={12} m={1}>
+                            <Typography variant="h2">Buy on Opthy</Typography>
+                            <Typography variant="body2">Buy = Get:Fixed Swap Rate + Liquidity + Unlimited Swaps</Typography>
+                        </Grid>
                     </Grid>
-                </Grid>
-            </Box>
-            <Box m={2}>
-                <Grid container spacing={2}>
-                    {/* Opthy card loop  */}
-                    { opthys?.length > 0 ?
-                    opthys.map((opthyData: any, index: any) => {
-                        if(index === 6) {
-                            // formatUnits(opthyData.token0.balance, opthyData.token0.decimals)
-                            // console.log("opthyData = ", formatUnits(opthyData.balanceT1));
-                            
-                        }
-                        return (
-                            <Grid item xs={12} md={4} key={index}>
-                                <OpthyCard data={opthyData} />
-                            </Grid> 
-                        )
-                    }): "" }
-                    {/* Opthy card loop  */}                   
-                </Grid>
-            </Box>
+                </Box>
+                <Box m={2}>
+                    <Grid container spacing={2}>
+                        {/* Opthy card loop  */}
+                        { opthys?.length > 0 ?
+                        opthys.map((opthyData: any, index: any) => {
+                            console.log("opthyData = ", opthyData, "index = ", index);
+                            const now = Math.floor(Date.now() / 1000);
+                            const expire = parseInt(opthyData.expiration._hex);
+                            if(expire > now){
+                                return (
+                                    <Grid item xs={12} md={4} key={index}>
+                                        <OpthyCard data={opthyData} calledFrom="home" />
+                                    </Grid> 
+                                )
+                            }
+                        }): "" }
+                        {/* Opthy card loop  */}                   
+                    </Grid>
+                </Box>
+                </> 
+                }
             </Container>
         </Page>
     )

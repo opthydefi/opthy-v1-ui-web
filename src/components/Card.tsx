@@ -1,6 +1,6 @@
 import React from "react";
 import type { FC } from "react"
-import { Button } from '@mui/material';
+import { Button, Paper } from '@mui/material';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import CardMedia from '@mui/material/CardMedia';
@@ -8,6 +8,8 @@ import Typography from '@mui/material/Typography';
 import { CardActionArea, CardActions, Box, Grid } from '@mui/material';
 import type { Theme } from 'src/types/theme';
 import makeStyles from '@mui/styles/makeStyles';
+import LinearProgress, { linearProgressClasses } from '@mui/material/LinearProgress';
+import { styled } from '@mui/material/styles';
 import Divider from '@mui/material/Divider';
 import { formatUnits } from '@ethersproject/units';
 import { useERC20Metadata, CURRENCY_CONVERT } from "src/utils/helpers";
@@ -30,21 +32,31 @@ const useStyles = makeStyles((theme: Theme) => ({
     },
     boxHeader: {
         height: '8px'
-    }
+    },
+    paperTransparent:{
+        backgroundColor: "transparent !important" ,
+    },
+    customProgress:{
+        "& .MuiLinearProgress-bar": {
+            borderRadius: "5px 0px 0px 5px !important",           
+            borderRight: "3px solid" + theme.palette.background.default,
+        },
+    },
 }));
 
 interface CardProps {
     data: any;
+    calledFrom: string;
 }
 
-export const OpthyCard: FC<CardProps> = ({ data }: CardProps) => {
+export const OpthyCard: FC<CardProps> = ({ data, calledFrom }: CardProps) => {
     const classes = useStyles();
     const { userCurrentAddress } = useEthersState();
     const [balance, setBalance] = React.useState<string | undefined>()
-
+    // console.log("calledFrom = ", calledFrom);
     let result: any = {}
-    const { opthy: contractAddress, expiration, token0, token1, balanceT0, balanceT1, rT0, rT1 } = data;
-    // console.log(contractAddress, expiration, token0, token1, balanceT0, balanceT1, rT0, rT1);
+    const { opthy: contractAddress, expiration, token0, token1, swapperFeeAmount, swapperFeeToken, balanceT0, balanceT1, rT0, rT1 } = data;
+    // console.log(contractAddress, expiration, token0, token1, swapperFeeToken, balanceT0, balanceT1, rT0, rT1);
     result.address = contractAddress;
     
     // Expire Calculation
@@ -84,129 +96,162 @@ export const OpthyCard: FC<CardProps> = ({ data }: CardProps) => {
     token_1.r = rT1;
     result.token1 = token_1;
 
-    // Swap rate
+    //Swapper Details
+    let swapperDetail: any = {};
+    swapperDetail = useERC20Metadata(swapperFeeToken);
+    swapperDetail.address = swapperFeeToken;
+    result.swapperDetails = swapperDetail;
+
+    // Fixed Swap rate
     result.fixedSwapRate0 = Number(formatUnits(rT1, token_1.decimals)) / Number(formatUnits(rT0, token_0.decimals));
     result.fixedSwapRate1 = Number(formatUnits(rT0, token_0.decimals)) / Number(formatUnits(rT1, token_1.decimals));
 
-    // token0, token1 currency convert
+    // token0, token1, swapper currency convert
     const convertToken0Cur = CURRENCY_CONVERT(result.token0.symbol);
     const convertToken1Cur = CURRENCY_CONVERT(result.token1.symbol);
+    const convertSwapCur = CURRENCY_CONVERT(result.swapperDetails.symbol);
 
     const newCal = Number(formatUnits(balanceT0, token_0.decimals)) / Number(formatUnits(rT0, token_0.decimals));
     const newCal2 = Number(formatUnits(balanceT1, token_1.decimals)) / Number(formatUnits(rT1, token_1.decimals));
-    // console.log("newCal = ", formatUnits(balanceT1, token_1.decimals), formatUnits(rT1, token_1.decimals), newCal, newCal2);
-    const [daiTousd, setDaiTousd] = React.useState(0);
-
-    
+    result.bar1 = (Number(newCal) / (Number(newCal) + Number(newCal2))) * 100;
+    result.bar2 = (Number(newCal2) / (Number(newCal) + Number(newCal2))) * 100;
+    // console.log("newCal = ", result.bar1, result.bar2);
 
     return (
         <Card sx={{ m: 1, borderRadius: '10px' }}>
             {/* <CardActionArea> */}
                 <Box className={classes.boxHeader} sx={{backgroundColor: 'success.dark'}}></Box>
                 <CardContent>
-                {/* <Box> */}
-                    <Grid container>
-                        <Grid item xs={1.5}>
-                            <Typography gutterBottom variant="h5" component="div">DAI</Typography>
+                    { calledFrom === "contract" || calledFrom === "buyContract" ?
+                        <><Typography align="center" variant="h5">Listed</Typography>
+                        <Divider /></> : "" 
+                    }
+                    {/* <Box> */}
+                    <Grid container justifyContent="space-between" alignItems="center">
+                        <Grid item xs={1}>
+                            <Typography variant="h5">DAI</Typography>
                         </Grid>
-                        <Grid item xs={6} mt={2}>
-                            <Divider light={true} sx={{ borderBottomWidth: 10, borderRadius: 2 }} />
+                        <Grid item xs={9}>
+                            <BorderLinearProgress className={classes.customProgress} variant="determinate" value={result.bar1} />
                         </Grid>
-                        <Grid item xs={3} mt={2}>
-                            <Divider sx={{ borderBottomWidth: 10, borderRadius: 2 }} />
-                        </Grid>
-                        <Grid item xs={1.5}>
-                            <Typography align="right" gutterBottom variant="h5" component="div">ETH</Typography>
+                        <Grid item xs={1}>
+                            <Typography align="right" variant="h5">ETH</Typography>
                         </Grid>
                     </Grid>
-                {/* </Box> */}
-                <Grid container spacing={2} mt={0}>
-                    <Grid item xs={6}>
-                        <Typography variant="body2" color="text.secondary">
-                            Fixed Swap Rate: 
-                            <Box p={1}>
-                                <Typography gutterBottom variant="body2">1 {result.token0.symbol} {result.fixedSwapRate0 < 0.001 ? '<' : '=' } {result.fixedSwapRate0 < 0.001 ? 0.001: result.fixedSwapRate0} {result.token1.symbol}</Typography>
-                                <Typography gutterBottom variant="body2">1 {result.token1.symbol} = {result.fixedSwapRate1} {result.token0.symbol}</Typography>
-                            </Box>
-                        </Typography>
+                    {/* </Box> */}
+                    <Grid container spacing={2} mt={0}>
+                        <Grid item xs={6}>
+                            <Paper elevation={0} className={classes.paperTransparent}>
+                                <Typography variant="body2" color="text.secondary">Fixed Swap Rate: </Typography>
+                                <Box p={1}>
+                                    <Typography gutterBottom variant="body2">1 {result.token0.symbol} {result.fixedSwapRate0 < 0.001 ? '<' : '=' } {result.fixedSwapRate0 < 0.001 ? 0.001: result.fixedSwapRate0} {result.token1.symbol}</Typography>
+                                    <Typography gutterBottom variant="body2">1 {result.token1.symbol} = {result.fixedSwapRate1} {result.token0.symbol}</Typography>
+                                </Box>
+                            </Paper>
+                        </Grid>
+                        <Grid item xs={6}>
+                            <Paper elevation={0} className={classes.paperTransparent}>
+                                <Typography variant="body2" color="text.secondary"> Expires In: </Typography> 
+                                <Box p={1}>
+                                    <Typography gutterBottom variant="body2">{result.expiration}</Typography>
+                                </Box>                            
+                            </Paper>
+                        </Grid>
                     </Grid>
-                    <Grid item xs={6}>
-                        <Typography variant="body2" color="text.secondary">
-                            Expires In: 
-                            <Typography gutterBottom variant="body2">{result.expiration}</Typography>
-                        </Typography>
+                    <Grid container spacing={2} mt={1}>
+                        <Grid item xs={6}>
+                            <Paper elevation={0} className={classes.paperTransparent}>
+                                <Typography variant="body2" color="text.secondary">Current: </Typography>
+                                <Box p={1}>
+                                    <Typography gutterBottom variant="body2">{Number(formatUnits(balanceT0, result.token0.decimals))} {result.token0.symbol}</Typography>
+                                    <Typography gutterBottom variant="body2"> {Number(formatUnits(data.balanceT1, result.token1.decimals))} {result.token1.symbol}</Typography>
+                                </Box>
+                            </Paper>
+                        </Grid>
+                        <Grid item xs={6}>
+                            <Paper elevation={0} className={classes.paperTransparent}>
+                                <Typography variant="body2" color="text.secondary"> &nbsp; </Typography>
+                                <Box mt={1}>
+                                    <Typography variant="body2" color="text.secondary">~ ${convertToken0Cur?.currencyIsValidating ? 0 : (Number(formatUnits(balanceT0, result.token0.decimals)) * convertToken0Cur?.convertResult?.Price).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,')} USD</Typography>
+                                    <Typography variant="body2" color="text.secondary">~ ${convertToken1Cur?.currencyIsValidating ? 0 : (Number(formatUnits(balanceT1, result.token1.decimals)) * convertToken1Cur?.convertResult?.Price).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,')} USD</Typography>
+                                </Box>
+                            </Paper>
+                        </Grid>
+                    </Grid> 
+                    <Grid container spacing={2} mt={1}>
+                        <Grid item xs={6}>
+                            <Paper elevation={0} className={classes.paperTransparent}>
+                                <Typography variant="body2" color="text.secondary"> Liquidity Limit: </Typography>
+                                <Box p={1}>
+                                    <Typography gutterBottom variant="body2">{Number(formatUnits(rT0, result.token0.decimals))} {result.token0.symbol}</Typography>
+                                    <Typography gutterBottom variant="body2"> {Number(formatUnits(rT1, result.token1.decimals))} {result.token1.symbol}</Typography>
+                                </Box>
+                            </Paper>
+                        </Grid>
+                        <Grid item xs={6}>
+                            <Paper elevation={0} className={classes.paperTransparent}>
+                                <Typography variant="body2" color="text.secondary"> &nbsp; </Typography>
+                                <Box mt={1}>
+                                    <Typography gutterBottom variant="body2" color="text.secondary">~ ${convertToken0Cur?.currencyIsValidating ? 0 : (Number(formatUnits(rT0, result.token0.decimals)) * convertToken0Cur?.convertResult?.Price).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,')} USD</Typography>
+                                    <Typography gutterBottom variant="body2" color="text.secondary">~ ${convertToken1Cur?.currencyIsValidating ? 0 : (Number(formatUnits(rT1, result.token1.decimals)) * convertToken1Cur?.convertResult?.Price).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,')} USD</Typography>
+                                </Box>
+                            </Paper>
+                        </Grid>
                     </Grid>
-                </Grid>
-                <Grid container spacing={2} mt={1}>
-                    <Grid item xs={6}>
-                        <Typography variant="body2" color="text.secondary">
-                            Current: 
-                            <Box p={1}>
-                                <Typography gutterBottom variant="body2">{Number(formatUnits(balanceT0, result.token0.decimals))} {result.token0.symbol}</Typography>
-                                <Typography gutterBottom variant="body2"> {Number(formatUnits(data.balanceT1, result.token1.decimals))} {result.token1.symbol}</Typography>
-                            </Box>
-                        </Typography>
-                    </Grid>
-                    <Grid item xs={6}>
-                        <Typography variant="body2" color="text.secondary">
-                            &nbsp;
-                            <Box mt={1}>
-                                <Typography variant="body2" color="text.secondary">~ ${convertToken0Cur?.currencyIsValidating ? 0 : (Number(formatUnits(balanceT0, result.token0.decimals)) * convertToken0Cur?.convertResult?.Price).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,')} USD</Typography>
-                                <Typography variant="body2" color="text.secondary">~ ${convertToken1Cur?.currencyIsValidating ? 0 : (Number(formatUnits(balanceT1, result.token1.decimals)) * convertToken1Cur?.convertResult?.Price).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,')} USD</Typography>
-                            </Box>
-                        </Typography>
-                    </Grid>
-                </Grid> 
-                <Grid container spacing={2} mt={1}>
-                    <Grid item xs={6}>
-                        <Typography variant="body2" color="text.secondary">
-                            Liquidity Limit:
-                            <Box p={1}>
-                                <Typography gutterBottom variant="body2">{Number(formatUnits(rT0, result.token0.decimals))} {result.token0.symbol}</Typography>
-                                <Typography gutterBottom variant="body2"> {Number(formatUnits(rT1, result.token1.decimals))} {result.token1.symbol}</Typography>
-                            </Box>
-                        </Typography>
-                    </Grid>
-                    <Grid item xs={6}>
-                        <Typography variant="body2" color="text.secondary">
-                            &nbsp;
-                            <Box mt={1}>
-                                <Typography gutterBottom variant="body2" color="text.secondary">~ ${convertToken0Cur?.currencyIsValidating ? 0 : (Number(formatUnits(rT0, result.token0.decimals)) * convertToken0Cur?.convertResult?.Price).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,')} USD</Typography>
-                                <Typography gutterBottom variant="body2" color="text.secondary">~ ${convertToken1Cur?.currencyIsValidating ? 0 : (Number(formatUnits(rT1, result.token1.decimals)) * convertToken1Cur?.convertResult?.Price).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,')} USD</Typography>
-                            </Box>
-                        </Typography>
-                    </Grid>
-                </Grid>
-                { Number(formatUnits(data.liquidityProviderFeeAmount, 18)) > 0 ? 
-                <>
-                <Divider/>
-                <Grid container spacing={2} mt={0}>
-                    <Grid item xs={6}>
-                        <Typography variant="body2" color="text.secondary">
-                            Get unlimited swaps for:
-                            <Box p={1}>
-                                <Typography gutterBottom variant="body2">{ parseInt(data.liquidityProviderFeeAmount._hex) } DAI</Typography>
-                            </Box>
-                        </Typography>
-                    </Grid>
-                    <Grid item xs={6}>
-                        <Typography variant="body2" color="text.secondary">
-                            &nbsp;
-                            <Box mt={1}>
-                                <Typography gutterBottom variant="body2" color="text.secondary">~ ${(parseInt(data.liquidityProviderFeeAmount._hex) * daiTousd).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,')} USD</Typography>
-                            </Box>
-                        </Typography>
-                    </Grid>
-                </Grid></> : "" }
+                    { Number(formatUnits(swapperFeeAmount, result.swapperDetails.decimals)) > 0 ? 
+                    <>
+                    <Divider/>
+                    <Grid container spacing={2} mt={0}>
+                        <Grid item xs={6}>
+                            <Paper elevation={0} className={classes.paperTransparent}>
+                                <Typography variant="body2" color="text.secondary"> Get unlimited swaps for: </Typography>
+                                <Box p={1}>
+                                    <Typography gutterBottom variant="body2">{ Number(formatUnits(swapperFeeAmount, result.swapperDetails.decimals))} {result.swapperDetails.symbol}</Typography>
+                                </Box>
+                            </Paper>
+                        </Grid>
+                        <Grid item xs={6}>
+                            <Paper elevation={0} className={classes.paperTransparent}>
+                                <Typography variant="body2" color="text.secondary"> &nbsp; </Typography>
+                                <Box mt={1}>
+                                    <Typography gutterBottom variant="body2" color="text.secondary">~ ${convertSwapCur?.currencyIsValidating ? 0 : (Number(formatUnits(swapperFeeAmount, result.swapperDetails.decimals)) * convertSwapCur?.convertResult?.Price).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,')} USD</Typography>
+                                </Box>
+                            </Paper>    
+                        </Grid>
+                    </Grid></> : "" }
                 </CardContent>
             {/* </CardActionArea> */}
             <CardActions>
                 <Grid container spacing={2} mt={0} justifyContent="center">
-                    <Grid item>
-                        <Button size="medium" sx={{ m: 1 }} variant="contained" color="primary">View Offer</Button>
-                    </Grid>
+                    { calledFrom === "home" ?
+                        <Grid item>
+                            <Button size="medium" sx={{ m: 1 }} variant="contained" color="primary">View Offer</Button>
+                        </Grid>: "" 
+                    }
+                    { calledFrom === "contract" ?
+                        <Grid item>
+                            <Button size="medium" sx={{ m: 1 }} variant="contained" color="primary">Buy</Button>
+                        </Grid>: "" 
+                    }
+                    { calledFrom === "buyContract" ?<>
+                    <Button size="medium" sx={{ m: 1 }} variant="contained" color="primary">Swap</Button>
+                    <Button size="medium" sx={{ m: 1 }} variant="contained" color="primary">Relist</Button></>
+                    : "" }
                 </Grid>
+                
             </CardActions>
         </Card>
     )
 }
+
+const BorderLinearProgress = styled(LinearProgress)(({ theme }) => ({
+    height: 12,
+    borderRadius: 5,
+    [`&.${linearProgressClasses.colorPrimary}`]: {
+      backgroundColor: theme.palette.grey[theme.palette.mode === 'light' ? 200 : 800],
+    },
+    [`& .${linearProgressClasses.bar}`]: {
+      borderRadius: 5,
+      backgroundColor: theme.palette.mode === 'light' ? '#1a90ff' : '#308fe8',
+    },
+}));

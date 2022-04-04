@@ -110,11 +110,12 @@ const Contract: FC = () => {
                             swapperFeeToken: "0x7Af456bf0065aADAB2E6BEc6DaD3731899550b84",
                             token0: "0x7Af456bf0065aADAB2E6BEc6DaD3731899550b84",
                             token1: "0xc778417E063141139Fce010982780140Aa0cD5Ab"
-                        }} calledFrom="contract" />
+                        }} calledFrom="buyContract" />
                     </Grid>
                     {/* Opthy card loop  */}  
                     <Grid item xs={12} md={4}>
                         <Card sx={{ m: 1, borderRadius: '10px' }}>
+                    
                             <Box className={classes.boxHeader} sx={{backgroundColor: 'success.dark'}}></Box>
                             <CardContent>
                                 <Typography align="center" variant="h5">Providing Liquidity</Typography>
@@ -151,11 +152,14 @@ const Contract: FC = () => {
                                 </Grid>
                             </CardActions>
                         </Card>
-                    </Grid>       
+
+
+                    </Grid>
+                                     
                 </Grid>
             </Box>
             <Box m={2}>
-                <Typography variant="h6">Swap at the Fixed Rate?</Typography>
+                <Typography variant="h6">Buy this Contract?</Typography>
                 <Grid container spacing={2}>              
                     {/* Opthy card loop  */}
                     <Grid item xs={12} md={6}>
