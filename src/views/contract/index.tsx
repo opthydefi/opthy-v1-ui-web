@@ -9,6 +9,9 @@ import makeStyles from '@mui/styles/makeStyles';
 import Divider from '@mui/material/Divider';
 import LinearProgress, { linearProgressClasses } from '@mui/material/LinearProgress';
 import { styled } from '@mui/material/styles';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
 
 const useStyles = makeStyles((theme: Theme) => ({
     customContainer: {       
@@ -45,22 +48,7 @@ const Contract: FC = () => {
     const handleOpen = () => {
         setOpen(true);
     };
-    // const data: any = {
-    //     balanceT0: BigNumber {_hex: '0x8ac7230489e80000', _isBigNumber: true}
-    //     balanceT1: BigNumber {_hex: '0x00', _isBigNumber: true}
-    //     expiration: BigNumber {_hex: '0x02540be400', _isBigNumber: true}
-    //     liquidityProvider: "0x9d23e5D38C31DF9FF11512e40f43a2a4Fa7a3b41"
-    //     liquidityProviderFeeAmount: BigNumber {_hex: '0x00', _isBigNumber: true}
-    //     liquidityProviderFeeToken: "0x7Af456bf0065aADAB2E6BEc6DaD3731899550b84"
-    //     opthy: "0x1Da9c71671f292819aE4680DA58d0a410BD1a009"
-    //     rT0: BigNumber {_hex: '0x8ac7230489e80000', _isBigNumber: true}
-    //     rT1: BigNumber {_hex: '0x0bd7a625405555', _isBigNumber: true}
-    //     swapper: "0x9d23e5D38C31DF9FF11512e40f43a2a4Fa7a3b41"
-    //     swapperFeeAmount: BigNumber {_hex: '0x0de0b6b3a7640000', _isBigNumber: true}
-    //     swapperFeeToken: "0x7Af456bf0065aADAB2E6BEc6DaD3731899550b84"
-    //     token0: "0x7Af456bf0065aADAB2E6BEc6DaD3731899550b84"
-    //     token1: "0xc778417E063141139Fce010982780140Aa0cD5Ab"
-    // };
+    
     return (
         <Page title="Contract">
             <Box m={2} mt={10}>
@@ -155,7 +143,11 @@ const Contract: FC = () => {
                 </Grid>
             </Box>
             <Box m={2}>
-                <Typography variant="h6">Swap at the Fixed Rate?</Typography>
+                <Grid container spacing={2}>
+                    <Grid item xs={12} m={1}>
+                        <Typography variant="h6">Swap at the Fixed Rate?</Typography>
+                    </Grid>
+                </Grid>
                 <Grid container spacing={2}>              
                     {/* Opthy card loop  */}
                     <Grid item xs={12} md={6}>
@@ -262,7 +254,7 @@ const Contract: FC = () => {
                     <Grid item xs={12} >
                         <Card sx={{ m: 1, borderRadius: '10px' }}>
                             <CardContent>
-                                <Typography m={1} variant="body2"> Contract balance after: 60,000.00 DAI / 9000000000 BTC </Typography>
+                                <Typography m={1} variant="body2" align="center" > Contract balance after: 60,000.00 DAI / 9000000000 BTC </Typography>
                             </CardContent>
                         </Card>
                     </Grid>
@@ -274,6 +266,62 @@ const Contract: FC = () => {
                 <Grid container justifyContent="center">
                     <Grid item>
                         <Button size="medium" variant="contained" color="primary">Approve DAI to Buy</Button>
+                    </Grid>
+                </Grid>
+            </Box>
+            <Box m={2}>
+                <Grid container spacing={2}>
+                    <Grid item xs={12} m={1}>
+                        <Typography variant="h6">Contract History</Typography>
+                    </Grid>
+                </Grid>
+                <Grid container spacing={2}>
+                    <Grid item xs={12} m={1}>
+                    <List sx={{ width: '100%', maxWidth: 800, bgcolor: 'background.paper' }}>
+                    {/* {[1, 2, 3].map((value) => ( */}
+                        <ListItem
+                        key={1}
+                        >
+                            <ListItemText sx={{ width: 100 }} primary={`2022-05-04`} />
+                            <ListItemText sx={{ width: 100 }} primary={`17:46`} />
+                            <ListItemText sx={{
+                                width: 600,
+                                padding: '4px 15px 4px 15px',
+                                border: '1px solid',
+                                bgcolor: (theme) =>
+                                theme.palette.mode === 'dark' ? '#0f69b78c' : 'grey.100', 
+                                borderRadius: 2,
+                                fontSize: '0.875rem',
+                                fontWeight: '700',
+                                color: (theme) =>
+                                theme.palette.mode === 'dark' ? 'grey.300' : 'grey.800',
+                                borderColor: (theme) =>
+                                theme.palette.mode === 'dark' ? 'grey.800' : 'grey.300',
+                            }} primary={`Contract bought by: 45ab5471485cfaadeccabdef25631aef`} />
+                        </ListItem>
+                        <ListItem
+                        key={2}
+                        >
+                            <ListItemText sx={{ width: 100 }} primary={`2022-05-04`} />
+                            <ListItemText sx={{ width: 100 }} primary={`17:46`} />
+                            <ListItemText sx={{ 
+                                width: 600,
+                                padding: '4px 15px 4px 15px',
+                                border: '1px solid',
+                                bgcolor: (theme) =>
+                                theme.palette.mode === 'dark' ? '#0f69b78c' : 'grey.100', 
+                                borderRadius: 2,
+                                fontSize: '0.875rem',
+                                fontWeight: '700',
+                                color: (theme) =>
+                                theme.palette.mode === 'dark' ? 'grey.300' : 'grey.800',
+                                borderColor: (theme) =>
+                                theme.palette.mode === 'dark' ? 'grey.800' : 'grey.300',
+                            }} primary={`Contract created by you as a seller`} />
+                        </ListItem>
+                        
+                    {/* ))} */}
+                    </List>
                     </Grid>
                 </Grid>
             </Box>

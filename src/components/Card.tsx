@@ -228,12 +228,12 @@ export const OpthyCard: FC<CardProps> = ({ data, calledFrom }: CardProps) => {
                             <Button size="medium" sx={{ m: 1 }} variant="contained" color="primary">View Offer</Button>
                         </Grid>: "" 
                     }
-                    { calledFrom === "contract" ?
+                    { calledFrom === "buyContract" ?
                         <Grid item>
                             <Button size="medium" sx={{ m: 1 }} variant="contained" color="primary">Buy</Button>
                         </Grid>: "" 
                     }
-                    { calledFrom === "buyContract" ?<>
+                    { calledFrom === "contract" ?<>
                     <Button size="medium" sx={{ m: 1 }} variant="contained" color="primary">Swap</Button>
                     <Button size="medium" sx={{ m: 1 }} variant="contained" color="primary">Relist</Button></>
                     : "" }
