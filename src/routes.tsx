@@ -95,8 +95,12 @@ const routes: Routes = [
                 exact: true,
                 path: '/buy-contract',
                 component: lazy(() => import('src/views/buyContract'))
-              },
-
+            },
+            {
+                exact: true,
+                path: '/create-contract',
+                component: lazy(() => import('src/views/createContract'))
+            },
             {
                 component: () => <Redirect to="/404" />
             }

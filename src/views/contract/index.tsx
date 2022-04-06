@@ -37,7 +37,7 @@ const Contract: FC = () => {
     const [dai, setDai] = React.useState('');
     const [open, setOpen] = React.useState(false);
 
-    const handleChange = (event: { target: { value: React.SetStateAction<string>; }; }) => {
+    const handleChange = (event: { target: { value: React.SetStateAction<string> } }) => {
         setDai(event.target.value);
     };
 

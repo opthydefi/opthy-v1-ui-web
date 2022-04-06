@@ -34,9 +34,13 @@ const Home: FC = () => {
     const signer = provider.getSigner();
 
     let AllOpthys = OpthysView(ChainId.RinkebyTestnet);
-    // console.log("AllOpthys = ", AllOpthys)
+    console.log("AllOpthys = ", AllOpthys);
+
     let OnlyOpthys = Opthys(ChainId.RinkebyTestnet);
-    // console.log("OnlyOpthys = ", OnlyOpthys)
+    console.log("OnlyOpthys = ", OnlyOpthys);
+
+    let MyOpthys = OpthyABI(ChainId.RinkebyTestnet);
+    console.log("MyOpthys = ", MyOpthys);
 
     const { data: opthys, mutate, isValidating } = useSWR([AllOpthys.ABI, AllOpthys.address, "all"]);
     // console.log(opthys, isValidating, 'isValidating');
@@ -95,7 +99,7 @@ const Home: FC = () => {
                         {/* Opthy card loop  */}
                         { opthys?.length > 0 ?
                         opthys.map((opthyData: any, index: any) => {
-                            console.log("opthyData = ", opthyData, "index = ", index);
+                            // console.log("opthyData = ", opthyData, "index = ", index);
                             const now = Math.floor(Date.now() / 1000);
                             const expire = parseInt(opthyData.expiration._hex);
                             if(expire > now){

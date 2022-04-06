@@ -36,10 +36,10 @@ const useStyles = makeStyles((theme: Theme) => ({
 }));
 
 
-const Contract: FC = () => {
+const BuyContract: FC = () => {
     const classes = useStyles();
     return (
-        <Page title="Contract">
+        <Page title="Buy Contract">
             <Box m={2} mt={10}>
                 <Grid container spacing={2}>
                     <Grid item xs={12} m={1}>
@@ -245,4 +245,4 @@ const Contract: FC = () => {
     )
 }
 
-export default Contract;
+export default BuyContract;

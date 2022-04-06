@@ -15,6 +15,7 @@ import { formatUnits } from '@ethersproject/units';
 import { useERC20Metadata, CURRENCY_CONVERT } from "src/utils/helpers";
 import { useEthersState } from 'src/contexts/EthereumContext';
 import {ethers} from "ethers";
+import { Link } from "react-router-dom";
 
 declare let window:any
 
@@ -225,7 +226,9 @@ export const OpthyCard: FC<CardProps> = ({ data, calledFrom }: CardProps) => {
                 <Grid container spacing={2} mt={0} justifyContent="center">
                     { calledFrom === "home" ?
                         <Grid item>
-                            <Button size="medium" sx={{ m: 1 }} variant="contained" color="primary">View Offer</Button>
+                            <Link to="buy-contract">
+                                <Button size="medium" sx={{ m: 1 }} variant="contained" color="primary">View Offer</Button>
+                            </Link>
                         </Grid>: "" 
                     }
                     { calledFrom === "buyContract" ?
