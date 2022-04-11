@@ -1,18 +1,18 @@
 import React, { FC } from "react";
+import { Link, useLocation } from "react-router-dom";
 import Page from 'src/components/Page';
 import type { Theme } from 'src/types/theme';
 import { Grid, Box, Typography, CardActions, Container, FormControl, InputLabel, Select, MenuItem, Button, Paper } from '@mui/material';
+// import { useEthersState } from 'src/contexts/EthereumContext';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import { OpthyCard } from "src/components/Card";
 import makeStyles from '@mui/styles/makeStyles';
 import Divider from '@mui/material/Divider';
-import LinearProgress, { linearProgressClasses } from '@mui/material/LinearProgress';
-import { styled } from '@mui/material/styles';
-
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
+import { formatUnits } from '@ethersproject/units';
 
 const useStyles = makeStyles((theme: Theme) => ({
     customContainer: {       
@@ -35,9 +35,70 @@ const useStyles = makeStyles((theme: Theme) => ({
     },
 }));
 
+interface buyContract {
+    status: boolean,
+    message: string
+}
+
 
 const BuyContract: FC = () => {
+    // const { userCurrentAddress } = useEthersState();
     const classes = useStyles();
+    const [buyable, setBuyable] = React.useState<buyContract>({status: false, message: "Please approve before Buy."})
+
+    function useQuery() {
+        return new URLSearchParams(useLocation().search);
+    }
+    const query: any = useQuery();
+    const opthyData: any = JSON.parse(query.get("opthyDetails"));
+
+    // contractAddress=0x1Da9c71671f292819aE4680DA58d0a410BD1a009&expiration=10000000000&balanceT0=10000000000000000000&balanceT1=0&rT0=10000000000000000000&rT1=3333333333333333&opthyDetails={%22address%22:%220x1Da9c71671f292819aE4680DA58d0a410BD1a009%22,%22expiration%22:%2296650%20days%2013h.%2020m.%201s.%22,%22token0%22:{%22name%22:%22DAI%20Test%20Token%22,%22symbol%22:%22DAI%22,%22decimals%22:18,%22address%22:%220x7Af456bf0065aADAB2E6BEc6DaD3731899550b84%22,%22balance%22:{%22type%22:%22BigNumber%22,%22hex%22:%220x8ac7230489e80000%22},%22r%22:{%22type%22:%22BigNumber%22,%22hex%22:%220x8ac7230489e80000%22}},%22token1%22:{%22name%22:%22Wrapped%20Ether%22,%22symbol%22:%22WETH%22,%22decimals%22:18,%22address%22:%220xc778417E063141139Fce010982780140Aa0cD5Ab%22,%22balance%22:{%22type%22:%22BigNumber%22,%22hex%22:%220x00%22},%22r%22:{%22type%22:%22BigNumber%22,%22hex%22:%220x0bd7a625405555%22}},%22liquidityProviderDetails%22:{%22name%22:%22DAI%20Test%20Token%22,%22symbol%22:%22DAI%22,%22decimals%22:18,%22address%22:%220x9d23e5D38C31DF9FF11512e40f43a2a4Fa7a3b41%22,%22feeAmount%22:{%22type%22:%22BigNumber%22,%22hex%22:%220x00%22},%22token%22:%220x7Af456bf0065aADAB2E6BEc6DaD3731899550b84%22},%22swapperDetails%22:{%22name%22:%22DAI%20Test%20Token%22,%22symbol%22:%22DAI%22,%22decimals%22:18,%22address%22:%220x9d23e5D38C31DF9FF11512e40f43a2a4Fa7a3b41%22,%22feeAmount%22:{%22type%22:%22BigNumber%22,%22hex%22:%220x0de0b6b3a7640000%22},%22token%22:%220x7Af456bf0065aADAB2E6BEc6DaD3731899550b84%22},%22fixedSwapRate0%22:0.0003333333333333333,%22fixedSwapRate1%22:3000,%22bar1%22:100,%22bar2%22:0}
+    
+    const opthyDetails: {} = {
+        balanceT0: query.get("balanceT0"),
+        balanceT1: query.get("balanceT1"),
+        expiration: query.get("expiration"),
+        liquidityProvider: opthyData.liquidityProviderDetails.address,
+        liquidityProviderFeeAmount: opthyData.liquidityProviderDetails.feeAmount,
+        liquidityProviderFeeToken: opthyData.liquidityProviderDetails.token,
+        opthy: query.get("contractAddress"),
+        rT0: query.get("rT0"),
+        rT1: query.get("rT1"),
+        swapper: opthyData.swapperDetails.address,
+        swapperFeeAmount: opthyData.swapperDetails.feeAmount,
+        swapperFeeToken: opthyData.swapperDetails.token,
+        token0: opthyData.token0.address,
+        token1: opthyData.token1.address
+    };
+
+    // Expire Calculation
+    const now = Math.floor(Date.now() / 1000);
+    const expire = parseInt(query.get("expiration"));
+    let delta = expire - now;
+    const days = Math.floor(delta / 86400);
+    delta -= days * 86400;
+    const hours = Math.floor(delta / 3600) % 24;
+    delta -= hours * 3600;
+    const minutes = Math.floor(delta / 60) % 60;
+    delta -= minutes * 60;
+    const seconds = delta % 60;
+    opthyData.expiration = days +' days ' + hours + 'h. ' + minutes + 'm. ' + seconds + 's.';
+
+    // function isInt(n: number){
+    //     return Number(n) === n && n % 1 === 0;
+    // }
+    function isFloat(n: number){
+        return Number(n) === n && n % 1 !== 0;
+    }
+
+    const clickBuyContract = () => {
+        if(buyable?.status === true){
+
+        } else {
+            alert(buyable?.message);
+        }
+    }
+
     return (
         <Page title="Buy Contract">
             <Box m={2} mt={10}>
@@ -63,7 +124,7 @@ const BuyContract: FC = () => {
                             fontWeight: '700',
                             }}
                         >
-                            45ab5471485cfaadeccabdef25631aef
+                            {query.get("contractAddress")}
                         </Box>
                     </Grid>
                 </Grid>
@@ -72,24 +133,9 @@ const BuyContract: FC = () => {
                 <Grid container spacing={2}>                   
                     {/* Opthy card loop  */}
                     <Grid item xs={12} md={4}>
-                        <OpthyCard data={{
-                            balanceT0: {_hex: '0x8ac7230489e80000', _isBigNumber: true},
-                            balanceT1: {_hex: '0x00', _isBigNumber: true},
-                            expiration: {_hex: '0x02540be400', _isBigNumber: true},
-                            liquidityProvider: "0x9d23e5D38C31DF9FF11512e40f43a2a4Fa7a3b41",
-                            liquidityProviderFeeAmount: {_hex: '0x00', _isBigNumber: true},
-                            liquidityProviderFeeToken: "0x7Af456bf0065aADAB2E6BEc6DaD3731899550b84",
-                            opthy: "0x1Da9c71671f292819aE4680DA58d0a410BD1a009",
-                            rT0: {_hex: '0x8ac7230489e80000', _isBigNumber: true},
-                            rT1: {_hex: '0x0bd7a625405555', _isBigNumber: true},
-                            swapper: "0x9d23e5D38C31DF9FF11512e40f43a2a4Fa7a3b41",
-                            swapperFeeAmount: {_hex: '0x00', _isBigNumber: true},
-                            swapperFeeToken: "0x7Af456bf0065aADAB2E6BEc6DaD3731899550b84",
-                            token0: "0x7Af456bf0065aADAB2E6BEc6DaD3731899550b84",
-                            token1: "0xc778417E063141139Fce010982780140Aa0cD5Ab"
-                        }} calledFrom="buyContract" />
+                        <OpthyCard data={opthyDetails} calledFrom="buyContract" buyableProp={buyable}/>
                     </Grid>
-                    {/* Opthy card loop  */}  
+                    {/* Opthy card loop  */}
                     <Grid item xs={12} md={4}>
                         <Card sx={{ m: 1, borderRadius: '10px' }}>
                             <Box className={classes.boxHeader} sx={{backgroundColor: 'success.dark'}}></Box>
@@ -103,8 +149,8 @@ const BuyContract: FC = () => {
                                         <Paper elevation={0} className={classes.paperTransparent}>
                                             <Typography variant="body2" color="text.secondary">Value at Maturity, minimum * between: </Typography>
                                             <Box p={1}>
-                                                <Typography gutterBottom variant="body2">10 DAI</Typography>
-                                                <Typography gutterBottom variant="body2">0.3859674 WETH</Typography>
+                                                <Typography gutterBottom variant="body2">{Number(formatUnits(query.get("rT0"), opthyData.token0.decimals))} {opthyData.token0.symbol}</Typography>
+                                                <Typography gutterBottom variant="body2">{ parseFloat(formatUnits(query.get("rT1"), opthyData.token1.decimals)).toFixed(isFloat(Number(formatUnits(query.get("rT1"), opthyData.token1.decimals))) === true ? 4 : 2) } {opthyData.token1.symbol}</Typography>
                                             </Box>
                                         </Paper>
                                     </Grid>
@@ -114,7 +160,7 @@ const BuyContract: FC = () => {
                                         <Paper elevation={0} className={classes.paperTransparent}>
                                             <Typography variant="body2" color="text.secondary">Matures In: </Typography>
                                             <Box p={1}>
-                                                <Typography gutterBottom variant="body2">120days 10h. 11m. 2s.</Typography>
+                                                <Typography gutterBottom variant="body2">{opthyData.expiration}</Typography>
                                             </Box>
                                         </Paper>
                                     </Grid>
@@ -123,7 +169,7 @@ const BuyContract: FC = () => {
                             <CardActions>
                                 <Grid container spacing={2} mt={0} justifyContent="center">
                                     <Grid item>
-                                        <Button size="medium" sx={{ m: 1 }} variant="contained" color="primary">Buy</Button>
+                                        <Button onClick={clickBuyContract} size="medium" sx={{ m: 1 }} variant="contained" color="primary">Buy</Button>
                                     </Grid>
                                 </Grid>
                             </CardActions>
@@ -149,10 +195,19 @@ const BuyContract: FC = () => {
                                     <Divider />
                                 </Box>
                                 <Box textAlign='center' m={5}>
-                                    <Typography align="center" variant="h5">Pay 2.00 BTC</Typography>
+
+                                { Number(formatUnits(opthyData.swapperDetails.feeAmount, opthyData.swapperDetails.decimals)) > 0 ? 
+                                    <>
+                                    <Typography align="center" variant="h5">Pay { parseFloat(formatUnits(opthyData.swapperDetails.feeAmount, opthyData.swapperDetails.decimals)).toFixed(2)} {opthyData.swapperDetails.symbol}</Typography>
                                     <Typography align="center">to become the Swapper</Typography>
 
-                                    <Button size="medium" sx={{ m: 3 }} variant="contained" color="primary">Approve BTC to Buy</Button>
+                                    <Button size="medium" sx={{ m: 3 }} variant="contained" color="primary">Approve {opthyData.swapperDetails.symbol} to Buy</Button>
+                                    </>
+                                :   <>
+                                    <Typography align="center" variant="h5">The Swapper Role</Typography>
+                                    <Typography align="center">is not on offer</Typography>
+                                    </>
+                                }
                                 </Box>
                                 <Box m={5}>
                                     <Divider />
@@ -170,11 +225,17 @@ const BuyContract: FC = () => {
                                     <Divider />
                                 </Box>
                                 <Box textAlign='center' m={5}>
+                                { Number(formatUnits(opthyData.liquidityProviderDetails.feeAmount, opthyData.liquidityProviderDetails.decimals)) > 0 ? 
+                                    <>
+                                    <Typography align="center" variant="h5">Pay { parseFloat(formatUnits(opthyData.liquidityProviderDetails.feeAmount, opthyData.liquidityProviderDetails.decimals)).toFixed(2)} {opthyData.liquidityProviderDetails.symbol}</Typography>
+                                    <Typography align="center">to become the Liquidity Provider</Typography>
+                                    <Button size="medium" sx={{ m: 3 }} variant="contained" color="primary">Approve {opthyData.liquidityProviderDetails.symbol} to Buy</Button>
+                                    </>
+                                :   <>
                                     <Typography align="center" variant="h5">The Liquidity Provider Role</Typography>
                                     <Typography align="center">is not on offer</Typography>
-                                    {/* <Typography align="center" variant="h5">Pay 2.00 BTC</Typography>
-                                    <Typography align="center">to become the Liquidity Provider</Typography>
-                                    <Button size="medium" sx={{ m: 3 }} variant="contained" color="primary">Approve BTC to Buy</Button> */}
+                                    </>
+                                }
                                 </Box>
                                 <Box m={5}>
                                     <Divider />

@@ -34,16 +34,26 @@ const Home: FC = () => {
     const signer = provider.getSigner();
 
     let AllOpthys = OpthysView(ChainId.RinkebyTestnet);
-    console.log("AllOpthys = ", AllOpthys);
+    // console.log("AllOpthys = ", AllOpthys);
 
     let OnlyOpthys = Opthys(ChainId.RinkebyTestnet);
-    console.log("OnlyOpthys = ", OnlyOpthys);
+    // console.log("OnlyOpthys = ", OnlyOpthys);
 
     let MyOpthys = OpthyABI(ChainId.RinkebyTestnet);
-    console.log("MyOpthys = ", MyOpthys);
+    // console.log("MyOpthys = ", MyOpthys);
 
     const { data: opthys, mutate, isValidating } = useSWR([AllOpthys.ABI, AllOpthys.address, "all"]);
     // console.log(opthys, isValidating, 'isValidating');
+
+    // const myContract = new ethers.Contract(userCurrentAddress);
+    // console.log("provider = ", provider, signer);
+    // myContract.myEvent({}, { fromBlock: 0, toBlock: 'latest' }).get((error: string, eventResult: { args: any; }) => {
+    //     if (error)
+    //       console.log('Error in myEvent event handler: ' + error);
+    //     else
+    //       console.log('myEvent: ' + JSON.stringify(eventResult.args));
+    //   });
+    // const ourData = myContract.getPastEvents('MyEvent');
 
 
     const createOpthy = async (): Promise<void> => {

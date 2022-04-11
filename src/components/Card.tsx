@@ -48,21 +48,22 @@ const useStyles = makeStyles((theme: Theme) => ({
 interface CardProps {
     data: any;
     calledFrom: string;
+    buyableProp?: any
 }
 
-export const OpthyCard: FC<CardProps> = ({ data, calledFrom }: CardProps) => {
+export const OpthyCard: FC<CardProps> = ({ data, calledFrom, buyableProp }: CardProps) => {
     const classes = useStyles();
     const { userCurrentAddress } = useEthersState();
     const [balance, setBalance] = React.useState<string | undefined>()
     // console.log("calledFrom = ", calledFrom);
     let result: any = {}
-    const { opthy: contractAddress, expiration, token0, token1, swapperFeeAmount, swapperFeeToken, balanceT0, balanceT1, rT0, rT1 } = data;
-    // console.log(contractAddress, expiration, token0, token1, swapperFeeToken, balanceT0, balanceT1, rT0, rT1);
+    const { opthy: contractAddress, expiration, token0, token1, swapper, swapperFeeAmount, swapperFeeToken, liquidityProvider, liquidityProviderFeeAmount, liquidityProviderFeeToken, balanceT0, balanceT1, rT0, rT1 } = data;
+    // console.log("allData = ",contractAddress, expiration, token0, token1, swapperFeeToken, balanceT0, balanceT1, rT0, rT1);
     result.address = contractAddress;
     
     // Expire Calculation
     const now = Math.floor(Date.now() / 1000);
-    const expire = parseInt(expiration._hex);
+    const expire = parseInt(expiration);
     let delta = expire - now;
     const days = Math.floor(delta / 86400);
     delta -= days * 86400;
@@ -74,12 +75,12 @@ export const OpthyCard: FC<CardProps> = ({ data, calledFrom }: CardProps) => {
     result.expiration = days +' days ' + hours + 'h. ' + minutes + 'm. ' + seconds + 's.';
 
     // User Balance
-    const provider = new ethers.providers.Web3Provider(window.ethereum);
-    provider.getBalance(userCurrentAddress)
-    .then((result)=> {
-        setBalance(ethers.utils.formatEther(result))
-    });
-    result.currencyBalance = balance;
+    // const provider = new ethers.providers.Web3Provider(window.ethereum);
+    // provider.getBalance(userCurrentAddress)
+    // .then((result)=> {
+    //     setBalance(ethers.utils.formatEther(result))
+    // });
+    // result.currencyBalance = balance;
 
     // token0
     let token_0: any = {};
@@ -97,10 +98,20 @@ export const OpthyCard: FC<CardProps> = ({ data, calledFrom }: CardProps) => {
     token_1.r = rT1;
     result.token1 = token_1;
 
+    //Liquidity Provider Details
+    let lProviderDetail: any = {};
+    lProviderDetail = useERC20Metadata(liquidityProviderFeeToken);
+    lProviderDetail.address = liquidityProvider;
+    lProviderDetail.feeAmount = liquidityProviderFeeAmount;
+    lProviderDetail.token = liquidityProviderFeeToken;
+    result.liquidityProviderDetails = lProviderDetail;
+
     //Swapper Details
     let swapperDetail: any = {};
     swapperDetail = useERC20Metadata(swapperFeeToken);
-    swapperDetail.address = swapperFeeToken;
+    swapperDetail.address = swapper;
+    swapperDetail.feeAmount = swapperFeeAmount;
+    swapperDetail.token = swapperFeeToken;
     result.swapperDetails = swapperDetail;
 
     // Fixed Swap rate
@@ -117,6 +128,18 @@ export const OpthyCard: FC<CardProps> = ({ data, calledFrom }: CardProps) => {
     result.bar1 = (Number(newCal) / (Number(newCal) + Number(newCal2))) * 100;
     result.bar2 = (Number(newCal2) / (Number(newCal) + Number(newCal2))) * 100;
     // console.log("newCal = ", result.bar1, result.bar2);
+
+    function isFloat(n: number){
+        return Number(n) === n && n % 1 !== 0;
+    }
+
+    const clickBuyContract = () => {
+        if(buyableProp?.status === true){
+
+        } else {
+            alert(buyableProp?.message);
+        }
+    }
 
     return (
         <Card sx={{ m: 1, borderRadius: '10px' }}>
@@ -185,7 +208,7 @@ export const OpthyCard: FC<CardProps> = ({ data, calledFrom }: CardProps) => {
                                 <Typography variant="body2" color="text.secondary"> Liquidity Limit: </Typography>
                                 <Box p={1}>
                                     <Typography gutterBottom variant="body2">{Number(formatUnits(rT0, result.token0.decimals))} {result.token0.symbol}</Typography>
-                                    <Typography gutterBottom variant="body2"> {Number(formatUnits(rT1, result.token1.decimals))} {result.token1.symbol}</Typography>
+                                    <Typography gutterBottom variant="body2"> {Number(formatUnits(rT1, result.token1.decimals)).toFixed(isFloat(Number(formatUnits(rT1, result.token1.decimals))) === true ? 4 : 2)} {result.token1.symbol}</Typography>
                                 </Box>
                             </Paper>
                         </Grid>
@@ -226,14 +249,14 @@ export const OpthyCard: FC<CardProps> = ({ data, calledFrom }: CardProps) => {
                 <Grid container spacing={2} mt={0} justifyContent="center">
                     { calledFrom === "home" ?
                         <Grid item>
-                            <Link to="buy-contract">
+                            <Link to={"buy-contract?contractAddress=" + result.address + "&expiration=" + expiration + "&balanceT0=" + balanceT0 + "&balanceT1=" + balanceT1 + "&rT0=" + rT0 + "&rT1=" + rT1 + "&opthyDetails=" + JSON.stringify(result) }>
                                 <Button size="medium" sx={{ m: 1 }} variant="contained" color="primary">View Offer</Button>
                             </Link>
                         </Grid>: "" 
                     }
                     { calledFrom === "buyContract" ?
                         <Grid item>
-                            <Button size="medium" sx={{ m: 1 }} variant="contained" color="primary">Buy</Button>
+                            <Button onClick={clickBuyContract} size="medium" sx={{ m: 1 }} variant="contained" color="primary">Buy</Button>
                         </Grid>: "" 
                     }
                     { calledFrom === "contract" ?<>

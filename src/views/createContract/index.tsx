@@ -100,7 +100,12 @@ const CreateContract: FC = () => {
                                 <MenuItem value={10}>DAI</MenuItem>
                                 </Select>
                             </FormControl>
-                            <Typography m={1}> Fixed Swap Rate </Typography>
+                            <Box m={1} mt={10}>
+                                <Typography style={{display: 'inline-block'}}> Fixed Swap Rate </Typography>
+                                <Typography style={{display: 'inline-block', marginLeft: '43%', marginBottom: "0px"}} gutterBottom variant="body2" color="text.secondary">Toggle Order</Typography>
+                                <Typography style={{display: 'inline-block', marginLeft: '61%'}} variant="caption" color="text.secondary">1 BTC = 60K DAI</Typography>
+                            </Box>
+                            {/* <Typography m={1} mt={10}> Fixed Swap Rate </Typography> */}
                             <FormControl sx={{ m: 1, width: '50ch' }}>
                                 <InputLabel id="demo-controlled-open-select-label">BTC</InputLabel>
                                 <Select
@@ -141,7 +146,7 @@ const CreateContract: FC = () => {
                                 <MenuItem value={10}>DAI</MenuItem>
                                 </Select>
                             </FormControl>
-                            <Typography m={1}> Duration </Typography>
+                            <Typography m={1} mt={10}> Duration </Typography>
                             <FormControl sx={{ m: 1, width: '12ch' }} variant="outlined">
                             <OutlinedInput
                                 id="outlined-adornment-weight"
@@ -190,7 +195,36 @@ const CreateContract: FC = () => {
                                 }}
                             />
                             </FormControl>
-                        </Grid> 
+                        </Grid>
+                        <Grid item xs={12} md={12}>
+                            <Box display="flex"
+                                alignItems="center"
+                                justifyContent="center">
+                                <Typography m={1}> Swappable Asset </Typography>
+                            </Box>
+                            <Box display="flex"
+                            alignItems="center"
+                            justifyContent="center">
+                            <FormControl sx={{ m: 1, width: '53ch' }}>
+                                <InputLabel id="demo-controlled-open-select-label">DAI</InputLabel>
+                                <Select
+                                labelId="demo-controlled-open-select-label"
+                                id="demo-controlled-open-select"
+                                open={open}
+                                onClose={handleClose}
+                                onOpen={handleOpen}
+                                value={dai}
+                                label="DAI"
+                                onChange={handleChange}
+                                >
+                                <MenuItem value="">
+                                    <em>None</em>
+                                </MenuItem>
+                                <MenuItem value={10}>DAI</MenuItem>
+                                </Select>
+                            </FormControl>
+                            </Box>
+                        </Grid>
                     </Grid>
                 </Box>
             
