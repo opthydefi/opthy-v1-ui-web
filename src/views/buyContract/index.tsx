@@ -3,7 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import Page from 'src/components/Page';
 import type { Theme } from 'src/types/theme';
 import { Grid, Box, Typography, CardActions, Container, FormControl, InputLabel, Select, MenuItem, Button, Paper } from '@mui/material';
-// import { useEthersState } from 'src/contexts/EthereumContext';
+import { useEthersState } from 'src/contexts/EthereumContext';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import { OpthyCard } from "src/components/Card";
@@ -13,6 +13,13 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import { formatUnits } from '@ethersproject/units';
+import { ChainId, ERC20 } from 'opthy-v1-core';
+import {ethers} from "ethers";
+
+declare let window:any
+
+const { address, ABI } = ERC20(ChainId.RinkebyTestnet);
+console.log("ERCMetaData = ", ABI, address);
 
 const useStyles = makeStyles((theme: Theme) => ({
     customContainer: {       
@@ -42,7 +49,7 @@ interface buyContract {
 
 
 const BuyContract: FC = () => {
-    // const { userCurrentAddress } = useEthersState();
+    const { userCurrentAddress } = useEthersState();
     const classes = useStyles();
     const [buyable, setBuyable] = React.useState<buyContract>({status: false, message: "Please approve before Buy."})
 
@@ -51,8 +58,6 @@ const BuyContract: FC = () => {
     }
     const query: any = useQuery();
     const opthyData: any = JSON.parse(query.get("opthyDetails"));
-
-    // contractAddress=0x1Da9c71671f292819aE4680DA58d0a410BD1a009&expiration=10000000000&balanceT0=10000000000000000000&balanceT1=0&rT0=10000000000000000000&rT1=3333333333333333&opthyDetails={%22address%22:%220x1Da9c71671f292819aE4680DA58d0a410BD1a009%22,%22expiration%22:%2296650%20days%2013h.%2020m.%201s.%22,%22token0%22:{%22name%22:%22DAI%20Test%20Token%22,%22symbol%22:%22DAI%22,%22decimals%22:18,%22address%22:%220x7Af456bf0065aADAB2E6BEc6DaD3731899550b84%22,%22balance%22:{%22type%22:%22BigNumber%22,%22hex%22:%220x8ac7230489e80000%22},%22r%22:{%22type%22:%22BigNumber%22,%22hex%22:%220x8ac7230489e80000%22}},%22token1%22:{%22name%22:%22Wrapped%20Ether%22,%22symbol%22:%22WETH%22,%22decimals%22:18,%22address%22:%220xc778417E063141139Fce010982780140Aa0cD5Ab%22,%22balance%22:{%22type%22:%22BigNumber%22,%22hex%22:%220x00%22},%22r%22:{%22type%22:%22BigNumber%22,%22hex%22:%220x0bd7a625405555%22}},%22liquidityProviderDetails%22:{%22name%22:%22DAI%20Test%20Token%22,%22symbol%22:%22DAI%22,%22decimals%22:18,%22address%22:%220x9d23e5D38C31DF9FF11512e40f43a2a4Fa7a3b41%22,%22feeAmount%22:{%22type%22:%22BigNumber%22,%22hex%22:%220x00%22},%22token%22:%220x7Af456bf0065aADAB2E6BEc6DaD3731899550b84%22},%22swapperDetails%22:{%22name%22:%22DAI%20Test%20Token%22,%22symbol%22:%22DAI%22,%22decimals%22:18,%22address%22:%220x9d23e5D38C31DF9FF11512e40f43a2a4Fa7a3b41%22,%22feeAmount%22:{%22type%22:%22BigNumber%22,%22hex%22:%220x0de0b6b3a7640000%22},%22token%22:%220x7Af456bf0065aADAB2E6BEc6DaD3731899550b84%22},%22fixedSwapRate0%22:0.0003333333333333333,%22fixedSwapRate1%22:3000,%22bar1%22:100,%22bar2%22:0}
     
     const opthyDetails: {} = {
         balanceT0: query.get("balanceT0"),
@@ -70,7 +75,7 @@ const BuyContract: FC = () => {
         token0: opthyData.token0.address,
         token1: opthyData.token1.address
     };
-
+    
     // Expire Calculation
     const now = Math.floor(Date.now() / 1000);
     const expire = parseInt(query.get("expiration"));
@@ -97,6 +102,25 @@ const BuyContract: FC = () => {
         } else {
             alert(buyable?.message);
         }
+    }
+
+    let { ethereum } = window;
+    const provider = new ethers.providers.Web3Provider(ethereum);
+    const signer = provider.getSigner();
+
+
+    const clickSwapperApprove = async (): Promise<void> => {
+        const contract = new ethers.Contract(opthyData.swapperDetails.token, ABI, signer);
+        const transaction = await contract.approve(
+            query.get("contractAddress"),
+            "1000000000000000000"
+        );
+        console.log("transaction1 = ", transaction);
+        if(transaction && transaction.hash){
+            setBuyable({status: true, message: ""});
+        }
+        // await transaction.wait();
+        // await mutate(opthys, true);
     }
 
     return (
@@ -201,7 +225,7 @@ const BuyContract: FC = () => {
                                     <Typography align="center" variant="h5">Pay { parseFloat(formatUnits(opthyData.swapperDetails.feeAmount, opthyData.swapperDetails.decimals)).toFixed(2)} {opthyData.swapperDetails.symbol}</Typography>
                                     <Typography align="center">to become the Swapper</Typography>
 
-                                    <Button size="medium" sx={{ m: 3 }} variant="contained" color="primary">Approve {opthyData.swapperDetails.symbol} to Buy</Button>
+                                    <Button onClick={clickSwapperApprove} size="medium" sx={{ m: 3 }} variant="contained" color="primary">Approve {opthyData.swapperDetails.symbol} to Buy</Button>
                                     </>
                                 :   <>
                                     <Typography align="center" variant="h5">The Swapper Role</Typography>

@@ -16,9 +16,12 @@ import { useERC20Metadata, CURRENCY_CONVERT } from "src/utils/helpers";
 import { useEthersState } from 'src/contexts/EthereumContext';
 import {ethers} from "ethers";
 import { Link } from "react-router-dom";
+import { ChainId, ERC20 } from 'opthy-v1-core';
+import useSWR from 'swr';
 
 declare let window:any
-
+// const ERCMetaData = ERC20(ChainId.RinkebyTestnet);
+// console.log("ERCMetaData = ", ERCMetaData);
 
 const useStyles = makeStyles((theme: Theme) => ({
     root: {
@@ -133,9 +136,26 @@ export const OpthyCard: FC<CardProps> = ({ data, calledFrom, buyableProp }: Card
         return Number(n) === n && n % 1 !== 0;
     }
 
-    const clickBuyContract = () => {
-        if(buyableProp?.status === true){
+    // let { ethereum } = window;
+    // const provider = new ethers.providers.Web3Provider(ethereum);
+    // const signer = provider.getSigner();
 
+    const clickBuyContract = async (): Promise<void> => {
+        if(buyableProp?.status === true){
+            
+                // const contract = new ethers.Contract(userCurrentAddress, ERCMetaData.ABI, signer);
+                // const transaction = await contract.approve(
+                //     "0x1Da9c71671f292819aE4680DA58d0a410BD1a009",
+                //     "1000000000000000000"
+                // );
+        
+                // await transaction.wait();
+                // console.log("transaction = ", transaction)
+                // await mutate(opthys, true);
+
+
+            // const { data: opthyApprove, mutate: approveMutate, isValidating: approveValidating } = useSWR([ERCMetaData.ABI, "approve", "0x1Da9c71671f292819aE4680DA58d0a410BD1a009", "10000000000000000000"]);
+            // console.log("opthyApprove = ", opthyApprove);
         } else {
             alert(buyableProp?.message);
         }
