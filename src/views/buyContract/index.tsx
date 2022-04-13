@@ -12,9 +12,11 @@ import Divider from '@mui/material/Divider';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
-import { formatUnits } from '@ethersproject/units';
+import { formatUnits, parseEther } from '@ethersproject/units';
 import { ChainId, ERC20 } from 'opthy-v1-core';
-import {ethers} from "ethers";
+import {ContractInterface, ethers} from "ethers";
+import { TransactionReceipt, TransactionResponse } from "@ethersproject/providers";
+import { LogDescription } from "ethers/lib/utils";
 
 declare let window:any
 
@@ -110,18 +112,37 @@ const BuyContract: FC = () => {
 
 
     const clickSwapperApprove = async (): Promise<void> => {
+        const iface:ContractInterface = new ethers.utils.Interface(ABI)
         const contract = new ethers.Contract(opthyData.swapperDetails.token, ABI, signer);
-        const transaction = await contract.approve(
+        const txResponse: TransactionResponse = await contract.approve(
             query.get("contractAddress"),
-            "1000000000000000000"
+            parseEther("1000000000000")
         );
-        console.log("transaction1 = ", transaction);
-        if(transaction && transaction.hash){
-            setBuyable({status: true, message: ""});
-        }
-        // await transaction.wait();
+        console.log("Transaction Response = ", txResponse);
+        const txReceipt: TransactionReceipt = await txResponse.wait()
+        console.log("txReceipt = ", txReceipt)
+        console.log("txReceipt log = ", txReceipt.logs[0])
+        const event: LogDescription = iface.parseLog(txReceipt.logs[0])
+        console.log("event = ", event)
         // await mutate(opthys, true);
     }
+
+    React.useEffect(() => {
+        if(!ethereum) return
+        if(!userCurrentAddress) return
+        const provider = new ethers.providers.Web3Provider(ethereum)
+        const erc20 = new ethers.Contract(opthyData.swapperDetails.token, ABI, provider);
+        const approval = erc20.filters.Approval(userCurrentAddress, null);
+        const opthyAddress = query.get("contractAddress");
+        const amount = parseEther("1000000000000");
+        console.log("userCurrentAddress = ", userCurrentAddress, "opthyAddress = ", opthyAddress, "amount = ", amount)
+        provider.on(approval, (userCurrentAddress, opthyAddress, amount) => {
+            console.log("approval Event = ", userCurrentAddress)
+        });
+        return () => {
+            provider.removeAllListeners(approval)
+        }
+    }, [userCurrentAddress, opthyData]);
 
     return (
         <Page title="Buy Contract">

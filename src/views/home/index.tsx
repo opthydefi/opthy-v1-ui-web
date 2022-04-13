@@ -40,7 +40,7 @@ const Home: FC = () => {
     // console.log("OnlyOpthys = ", OnlyOpthys);
 
     let MyOpthys = OpthyABI(ChainId.RinkebyTestnet);
-    // console.log("MyOpthys = ", MyOpthys);
+    console.log("MyOpthys = ", MyOpthys);
 
     const { data: opthys, mutate, isValidating } = useSWR([AllOpthys.ABI, AllOpthys.address, "all"]);
     // console.log(opthys, isValidating, 'isValidating');
