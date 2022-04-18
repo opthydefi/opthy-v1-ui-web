@@ -17,6 +17,7 @@ import { ChainId, ERC20 } from 'opthy-v1-core';
 import {ContractInterface, ethers} from "ethers";
 import { TransactionReceipt, TransactionResponse } from "@ethersproject/providers";
 import { LogDescription } from "ethers/lib/utils";
+import useSWR from 'swr';
 
 declare let window:any
 
@@ -42,6 +43,10 @@ const useStyles = makeStyles((theme: Theme) => ({
             borderRight: "3px solid" + theme.palette.background.default,
         },
     },
+    loadingClass: {
+        marginTop: '10% !important',
+        textAlign: 'center'
+    }
 }));
 
 interface buyContract {
@@ -60,6 +65,9 @@ const BuyContract: FC = () => {
     }
     const query: any = useQuery();
     const opthyData: any = JSON.parse(query.get("opthyDetails"));
+
+    const { data: allowanceData, mutate: allowanceMutate, isValidating: allowanceValidating } = useSWR([ABI, opthyData.swapperDetails.token, "allowance", userCurrentAddress, query.get("contractAddress") ]);
+    // console.log("allowance mutate Response = ", allowanceValidating, allowanceData);
     
     const opthyDetails: {} = {
         balanceT0: query.get("balanceT0"),
@@ -98,6 +106,40 @@ const BuyContract: FC = () => {
         return Number(n) === n && n % 1 !== 0;
     }
 
+    React.useEffect(() => {
+        if(allowanceValidating === false){
+            if(Number(formatUnits(allowanceData, 18)) > 0){
+                setBuyable({status: true, message: ""});
+            }
+        }
+    }, [allowanceValidating]);
+
+    let { ethereum } = window;
+    const provider = new ethers.providers.Web3Provider(ethereum);
+    const signer = provider.getSigner();
+    const contract = new ethers.Contract(opthyData.swapperDetails.token, ABI, signer);
+
+
+    const clickSwapperApprove = async (): Promise<void> => {
+        if(buyable?.status === false){
+            const iface:ContractInterface = new ethers.utils.Interface(ABI)
+            // const contract = new ethers.Contract(opthyData.swapperDetails.token, ABI, signer);
+            const txResponse: TransactionResponse = await contract.approve(
+                query.get("contractAddress"),
+                parseEther("1000000000000")
+            );
+            console.log("Transaction Response = ", txResponse);
+            const txReceipt: TransactionReceipt = await txResponse.wait();
+            await allowanceMutate(allowanceData, true);
+            // console.log("txReceipt = ", txReceipt)
+            // console.log("txReceipt log = ", txReceipt.logs[0])
+            // const event: LogDescription = iface.parseLog(txReceipt.logs[0])
+            // console.log("event = ", event)
+        } else {
+            alert("Already aprroved. Please Buy")
+        }
+    }
+
     const clickBuyContract = () => {
         if(buyable?.status === true){
 
@@ -106,44 +148,26 @@ const BuyContract: FC = () => {
         }
     }
 
-    let { ethereum } = window;
-    const provider = new ethers.providers.Web3Provider(ethereum);
-    const signer = provider.getSigner();
+    // React.useEffect(() => {
+    //     if(!ethereum) return
+    //     if(!userCurrentAddress) return
+    //     const provider = new ethers.providers.Web3Provider(ethereum)
+    //     const erc20 = new ethers.Contract(opthyData.swapperDetails.token, ABI, provider);
+    //     const approval = erc20.filters.Approval(userCurrentAddress, null);
+    //     const opthyAddress = query.get("contractAddress");
+    //     const amount = parseEther("1000000000000");
+    //     // console.log("userCurrentAddress = ", userCurrentAddress, "opthyAddress = ", opthyAddress, "amount = ", amount)
+    //     provider.on(approval, (userCurrentAddress, opthyAddress, amount) => {
+    //         console.log("approval Event = ", userCurrentAddress)
+    //     });
+    //     return () => {
+    //         provider.removeAllListeners(approval)
+    //     }
+    // }, [userCurrentAddress, opthyData]);
 
-
-    const clickSwapperApprove = async (): Promise<void> => {
-        const iface:ContractInterface = new ethers.utils.Interface(ABI)
-        const contract = new ethers.Contract(opthyData.swapperDetails.token, ABI, signer);
-        const txResponse: TransactionResponse = await contract.approve(
-            query.get("contractAddress"),
-            parseEther("1000000000000")
-        );
-        console.log("Transaction Response = ", txResponse);
-        const txReceipt: TransactionReceipt = await txResponse.wait()
-        console.log("txReceipt = ", txReceipt)
-        console.log("txReceipt log = ", txReceipt.logs[0])
-        const event: LogDescription = iface.parseLog(txReceipt.logs[0])
-        console.log("event = ", event)
-        // await mutate(opthys, true);
+    if(allowanceValidating === true){
+        return <Typography className={classes.loadingClass} gutterBottom variant="h5" component="div">Loading...</Typography>
     }
-
-    React.useEffect(() => {
-        if(!ethereum) return
-        if(!userCurrentAddress) return
-        const provider = new ethers.providers.Web3Provider(ethereum)
-        const erc20 = new ethers.Contract(opthyData.swapperDetails.token, ABI, provider);
-        const approval = erc20.filters.Approval(userCurrentAddress, null);
-        const opthyAddress = query.get("contractAddress");
-        const amount = parseEther("1000000000000");
-        console.log("userCurrentAddress = ", userCurrentAddress, "opthyAddress = ", opthyAddress, "amount = ", amount)
-        provider.on(approval, (userCurrentAddress, opthyAddress, amount) => {
-            console.log("approval Event = ", userCurrentAddress)
-        });
-        return () => {
-            provider.removeAllListeners(approval)
-        }
-    }, [userCurrentAddress, opthyData]);
-
     return (
         <Page title="Buy Contract">
             <Box m={2} mt={10}>
@@ -246,7 +270,11 @@ const BuyContract: FC = () => {
                                     <Typography align="center" variant="h5">Pay { parseFloat(formatUnits(opthyData.swapperDetails.feeAmount, opthyData.swapperDetails.decimals)).toFixed(2)} {opthyData.swapperDetails.symbol}</Typography>
                                     <Typography align="center">to become the Swapper</Typography>
 
+                                    {buyable?.status === false ? 
                                     <Button onClick={clickSwapperApprove} size="medium" sx={{ m: 3 }} variant="contained" color="primary">Approve {opthyData.swapperDetails.symbol} to Buy</Button>
+                                    :
+                                    <Button size="medium" sx={{ m: 3 }} variant="contained" color="primary">Approved </Button>
+                                    }
                                     </>
                                 :   <>
                                     <Typography align="center" variant="h5">The Swapper Role</Typography>

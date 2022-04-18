@@ -16,7 +16,7 @@ import { useERC20Metadata, CURRENCY_CONVERT } from "src/utils/helpers";
 import { useEthersState } from 'src/contexts/EthereumContext';
 import {ethers} from "ethers";
 import { Link } from "react-router-dom";
-import { ChainId, ERC20 } from 'opthy-v1-core';
+import { ChainId, ERC20, OpthyABI } from 'opthy-v1-core';
 import useSWR from 'swr';
 
 declare let window:any
@@ -51,7 +51,7 @@ const useStyles = makeStyles((theme: Theme) => ({
 interface CardProps {
     data: any;
     calledFrom: string;
-    buyableProp?: any
+    buyableProp?: {status: boolean, message: string};
 }
 
 export const OpthyCard: FC<CardProps> = ({ data, calledFrom, buyableProp }: CardProps) => {
@@ -59,6 +59,12 @@ export const OpthyCard: FC<CardProps> = ({ data, calledFrom, buyableProp }: Card
     const { userCurrentAddress } = useEthersState();
     const [balance, setBalance] = React.useState<string | undefined>()
     // console.log("calledFrom = ", calledFrom);
+
+
+    let MyOpthys = OpthyABI(ChainId.RinkebyTestnet);
+    console.log("MyOpthys = ", MyOpthys);
+
+
     let result: any = {}
     const { opthy: contractAddress, expiration, token0, token1, swapper, swapperFeeAmount, swapperFeeToken, liquidityProvider, liquidityProviderFeeAmount, liquidityProviderFeeToken, balanceT0, balanceT1, rT0, rT1 } = data;
     // console.log("allData = ",contractAddress, expiration, token0, token1, swapperFeeToken, balanceT0, balanceT1, rT0, rT1);
@@ -142,7 +148,7 @@ export const OpthyCard: FC<CardProps> = ({ data, calledFrom, buyableProp }: Card
 
     const clickBuyContract = async (): Promise<void> => {
         if(buyableProp?.status === true){
-            
+            console.log("Yes Buyable");
                 // const contract = new ethers.Contract(userCurrentAddress, ERCMetaData.ABI, signer);
                 // const transaction = await contract.approve(
                 //     "0x1Da9c71671f292819aE4680DA58d0a410BD1a009",
