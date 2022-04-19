@@ -11,13 +11,14 @@ import makeStyles from '@mui/styles/makeStyles';
 import LinearProgress, { linearProgressClasses } from '@mui/material/LinearProgress';
 import { styled } from '@mui/material/styles';
 import Divider from '@mui/material/Divider';
-import { formatUnits } from '@ethersproject/units';
+import { formatUnits, parseEther } from '@ethersproject/units';
 import { useERC20Metadata, CURRENCY_CONVERT } from "src/utils/helpers";
 import { useEthersState } from 'src/contexts/EthereumContext';
 import {ethers} from "ethers";
 import { Link } from "react-router-dom";
 import { ChainId, ERC20, OpthyABI } from 'opthy-v1-core';
 import useSWR from 'swr';
+import { TransactionReceipt, TransactionResponse } from "@ethersproject/providers";
 
 declare let window:any
 // const ERCMetaData = ERC20(ChainId.RinkebyTestnet);
@@ -56,13 +57,14 @@ interface CardProps {
 
 export const OpthyCard: FC<CardProps> = ({ data, calledFrom, buyableProp }: CardProps) => {
     const classes = useStyles();
-    const { userCurrentAddress } = useEthersState();
-    const [balance, setBalance] = React.useState<string | undefined>()
+    // const { userCurrentAddress } = useEthersState();
+    // const [balance, setBalance] = React.useState<string | undefined>()
     // console.log("calledFrom = ", calledFrom);
+    const [swapperBuyLoading, setSwapperBuyLoading] = React.useState<boolean>(false);
 
 
-    let MyOpthys = OpthyABI(ChainId.RinkebyTestnet);
-    console.log("MyOpthys = ", MyOpthys);
+    let opthyABI = OpthyABI(ChainId.RinkebyTestnet);
+    // console.log("MyOpthys = ", MyOpthys);
 
 
     let result: any = {}
@@ -148,20 +150,29 @@ export const OpthyCard: FC<CardProps> = ({ data, calledFrom, buyableProp }: Card
 
     const clickBuyContract = async (): Promise<void> => {
         if(buyableProp?.status === true){
-            console.log("Yes Buyable");
-                // const contract = new ethers.Contract(userCurrentAddress, ERCMetaData.ABI, signer);
-                // const transaction = await contract.approve(
-                //     "0x1Da9c71671f292819aE4680DA58d0a410BD1a009",
-                //     "1000000000000000000"
-                // );
-        
-                // await transaction.wait();
-                // console.log("transaction = ", transaction)
-                // await mutate(opthys, true);
-
-
-            // const { data: opthyApprove, mutate: approveMutate, isValidating: approveValidating } = useSWR([ERCMetaData.ABI, "approve", "0x1Da9c71671f292819aE4680DA58d0a410BD1a009", "10000000000000000000"]);
-            // console.log("opthyApprove = ", opthyApprove);
+            const swapperAmount = formatUnits(result.swapperDetails.feeAmount, result.swapperDetails.decimals);
+            if(Number(swapperAmount) > 0){
+                setSwapperBuyLoading(true);
+                console.log("Yes Buyable", buyableProp, balanceT0, balanceT1, result.swapperDetails.token,
+                result.swapperDetails.feeAmount);
+                let { ethereum } = window;
+                const provider = new ethers.providers.Web3Provider(ethereum);
+                const signer = provider.getSigner();
+                const contract = new ethers.Contract(result.swapperDetails.token, opthyABI, signer);
+                const txResponse: TransactionResponse = await contract.buySwapperRole(
+                    parseEther(balanceT0),
+                    parseEther(balanceT1),
+                    result.swapperDetails.token,
+                    result.swapperDetails.feeAmount
+                );
+                console.log("Buy Transaction Response = ", txResponse);
+                const txReceipt: TransactionReceipt = await txResponse.wait();
+                setSwapperBuyLoading(true);
+                console.log("txReceipt = ", txReceipt)
+                console.log("txReceipt log = ", txReceipt.logs[0])
+            } else {
+                alert("Sorry! This swapper role not buyable");
+            }
         } else {
             alert(buyableProp?.message);
         }
@@ -214,7 +225,7 @@ export const OpthyCard: FC<CardProps> = ({ data, calledFrom, buyableProp }: Card
                                 <Typography variant="body2" color="text.secondary">Current: </Typography>
                                 <Box p={1}>
                                     <Typography gutterBottom variant="body2">{Number(formatUnits(balanceT0, result.token0.decimals))} {result.token0.symbol}</Typography>
-                                    <Typography gutterBottom variant="body2"> {Number(formatUnits(data.balanceT1, result.token1.decimals))} {result.token1.symbol}</Typography>
+                                    <Typography gutterBottom variant="body2"> {Number(formatUnits(balanceT1, result.token1.decimals))} {result.token1.symbol}</Typography>
                                 </Box>
                             </Paper>
                         </Grid>

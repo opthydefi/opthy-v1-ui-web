@@ -22,7 +22,7 @@ import useSWR from 'swr';
 declare let window:any
 
 const { address, ABI } = ERC20(ChainId.RinkebyTestnet);
-console.log("ERCMetaData = ", ABI, address);
+// console.log("ERCMetaData = ", ABI, address);
 
 const useStyles = makeStyles((theme: Theme) => ({
     customContainer: {       
@@ -58,6 +58,7 @@ interface buyContract {
 const BuyContract: FC = () => {
     const { userCurrentAddress } = useEthersState();
     const classes = useStyles();
+    const [loading, setLoading] = React.useState<boolean>(false);
     const [buyable, setBuyable] = React.useState<buyContract>({status: false, message: "Please approve before Buy."})
 
     function useQuery() {
@@ -122,6 +123,7 @@ const BuyContract: FC = () => {
 
     const clickSwapperApprove = async (): Promise<void> => {
         if(buyable?.status === false){
+            setLoading(true);
             const iface:ContractInterface = new ethers.utils.Interface(ABI)
             // const contract = new ethers.Contract(opthyData.swapperDetails.token, ABI, signer);
             const txResponse: TransactionResponse = await contract.approve(
@@ -131,6 +133,7 @@ const BuyContract: FC = () => {
             console.log("Transaction Response = ", txResponse);
             const txReceipt: TransactionReceipt = await txResponse.wait();
             await allowanceMutate(allowanceData, true);
+            setLoading(false);
             // console.log("txReceipt = ", txReceipt)
             // console.log("txReceipt log = ", txReceipt.logs[0])
             // const event: LogDescription = iface.parseLog(txReceipt.logs[0])
@@ -235,6 +238,7 @@ const BuyContract: FC = () => {
                                     </Grid>
                                 </Grid>
                             </CardContent>
+                            { Number(formatUnits(opthyData.liquidityProviderDetails.feeAmount, opthyData.liquidityProviderDetails.decimals)) > 0 ?
                             <CardActions>
                                 <Grid container spacing={2} mt={0} justifyContent="center">
                                     <Grid item>
@@ -242,6 +246,7 @@ const BuyContract: FC = () => {
                                     </Grid>
                                 </Grid>
                             </CardActions>
+                            : "" }
                         </Card>
                     </Grid>        
                 </Grid>
@@ -271,7 +276,10 @@ const BuyContract: FC = () => {
                                     <Typography align="center">to become the Swapper</Typography>
 
                                     {buyable?.status === false ? 
-                                    <Button onClick={clickSwapperApprove} size="medium" sx={{ m: 3 }} variant="contained" color="primary">Approve {opthyData.swapperDetails.symbol} to Buy</Button>
+                                        loading === true ? 
+                                        <Button size="medium" sx={{ m: 3 }} variant="contained" color="primary">Please wait...</Button>
+                                        : 
+                                        <Button onClick={clickSwapperApprove} size="medium" sx={{ m: 3 }} variant="contained" color="primary">Approve {opthyData.swapperDetails.symbol} to Buy</Button>
                                     :
                                     <Button size="medium" sx={{ m: 3 }} variant="contained" color="primary">Approved </Button>
                                     }
