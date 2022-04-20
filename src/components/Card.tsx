@@ -11,7 +11,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import LinearProgress, { linearProgressClasses } from '@mui/material/LinearProgress';
 import { styled } from '@mui/material/styles';
 import Divider from '@mui/material/Divider';
-import { formatUnits, parseEther } from '@ethersproject/units';
+import { formatUnits, parseEther, parseUnits } from '@ethersproject/units';
 import { useERC20Metadata, CURRENCY_CONVERT } from "src/utils/helpers";
 import { useEthersState } from 'src/contexts/EthereumContext';
 import {ethers} from "ethers";
@@ -152,24 +152,28 @@ export const OpthyCard: FC<CardProps> = ({ data, calledFrom, buyableProp }: Card
         if(buyableProp?.status === true){
             const swapperAmount = formatUnits(result.swapperDetails.feeAmount, result.swapperDetails.decimals);
             if(Number(swapperAmount) > 0){
-                setSwapperBuyLoading(true);
-                console.log("Yes Buyable", buyableProp, balanceT0, balanceT1, result.swapperDetails.token,
-                result.swapperDetails.feeAmount);
-                let { ethereum } = window;
-                const provider = new ethers.providers.Web3Provider(ethereum);
-                const signer = provider.getSigner();
-                const contract = new ethers.Contract(result.swapperDetails.token, opthyABI, signer);
-                const txResponse: TransactionResponse = await contract.buySwapperRole(
-                    parseEther(balanceT0),
-                    parseEther(balanceT1),
-                    result.swapperDetails.token,
-                    result.swapperDetails.feeAmount
-                );
-                console.log("Buy Transaction Response = ", txResponse);
-                const txReceipt: TransactionReceipt = await txResponse.wait();
-                setSwapperBuyLoading(true);
-                console.log("txReceipt = ", txReceipt)
-                console.log("txReceipt log = ", txReceipt.logs[0])
+                try {
+                    setSwapperBuyLoading(true);
+                    // console.log("Yes Buyable", buyableProp, result.address, balanceT0, balanceT1, result.swapperDetails.token,result.swapperDetails.feeAmount);
+                    let { ethereum } = window;
+                    const provider = new ethers.providers.Web3Provider(ethereum);
+                    const signer = provider.getSigner();
+                    const contract = new ethers.Contract(result.address, opthyABI, signer);
+                    const txResponse: TransactionResponse = await contract.buySwapperRole(
+                        balanceT0,
+                        balanceT1,
+                        result.swapperDetails.token,
+                        result.swapperDetails.feeAmount
+                    );
+                    console.log("Buy Transaction Response = ", txResponse);
+                    const txReceipt: TransactionReceipt = await txResponse.wait();
+                    setSwapperBuyLoading(true);
+                    console.log("txReceipt = ", txReceipt)
+                    console.log("txReceipt log = ", txReceipt.logs[0])
+                } catch (error: any) {
+                    console.error(error);
+                    alert("Sorry! " + error.message);
+                }
             } else {
                 alert("Sorry! This swapper role not buyable");
             }
