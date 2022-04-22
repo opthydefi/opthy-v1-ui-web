@@ -13,7 +13,7 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import { formatUnits, parseEther } from '@ethersproject/units';
-import { ChainId, ERC20 } from 'opthy-v1-core';
+import { ChainId, ERC20, OpthyABI } from 'opthy-v1-core';
 import {ContractInterface, ethers} from "ethers";
 import { TransactionReceipt, TransactionResponse } from "@ethersproject/providers";
 import { LogDescription } from "ethers/lib/utils";
@@ -22,7 +22,9 @@ import useSWR from 'swr';
 declare let window:any
 
 const { address, ABI } = ERC20(ChainId.RinkebyTestnet);
-// console.log("ERCMetaData = ", ABI, address);
+console.log("ERCMetaData = ", ABI, address);
+const opthyABI = OpthyABI(ChainId.RinkebyTestnet);
+
 
 const useStyles = makeStyles((theme: Theme) => ({
     customContainer: {       
@@ -58,8 +60,15 @@ interface buyContract {
 const BuyContract: FC = () => {
     const { userCurrentAddress } = useEthersState();
     const classes = useStyles();
+    let { ethereum } = window;
+    const provider = new ethers.providers.Web3Provider(ethereum);
+    const signer = provider.getSigner();
+
     const [loading, setLoading] = React.useState<boolean>(false);
+    const [liquidityLoading, setLiquidityLoading] = React.useState<boolean>(false);
+    const [liquidityBuyLoading, setLiquidityBuyLoading] = React.useState<boolean>(false);
     const [buyable, setBuyable] = React.useState<buyContract>({status: false, message: "Please approve before Buy."})
+    const [liquidityBuyable, setLiquidityBuyable] = React.useState<buyContract>({status: false, message: "Please approve before Buy."})
 
     function useQuery() {
         return new URLSearchParams(useLocation().search);
@@ -69,6 +78,7 @@ const BuyContract: FC = () => {
 
     const { data: allowanceData, mutate: allowanceMutate, isValidating: allowanceValidating } = useSWR([ABI, opthyData.swapperDetails.token, "allowance", userCurrentAddress, query.get("contractAddress") ]);
     // console.log("allowance mutate Response = ", allowanceValidating, allowanceData);
+    
     
     const opthyDetails: {} = {
         balanceT0: query.get("balanceT0"),
@@ -109,48 +119,107 @@ const BuyContract: FC = () => {
 
     React.useEffect(() => {
         if(allowanceValidating === false){
-            if(Number(formatUnits(allowanceData, 18)) > 0){
-                setBuyable({status: true, message: ""});
+            const swapperAmount = Number(formatUnits(opthyData.swapperDetails.feeAmount, opthyData.swapperDetails.decimals));
+            const liquidityAmount = Number(formatUnits(opthyData.liquidityProviderDetails.feeAmount, opthyData.liquidityProviderDetails.decimals));
+            if(swapperAmount > 0) {
+                const allownaceAmount = Number(formatUnits(allowanceData, opthyData.swapperDetails.decimals));
+                if(allownaceAmount > 0){
+                    if(allownaceAmount > swapperAmount){
+                        setBuyable({status: true, message: ""});
+                    }
+                }
+            }
+            if(liquidityAmount > 0) {
+                const allownaceAmount = Number(formatUnits(allowanceData, opthyData.liquidityProviderDetails.decimals));
+                if(allownaceAmount > 0){
+                    if(allownaceAmount > liquidityAmount){
+                        setLiquidityBuyable({status: true, message: ""});
+                    }
+                }
             }
         }
     }, [allowanceValidating]);
 
-    let { ethereum } = window;
-    const provider = new ethers.providers.Web3Provider(ethereum);
-    const signer = provider.getSigner();
-    const contract = new ethers.Contract(opthyData.swapperDetails.token, ABI, signer);
-
-
-    const clickSwapperApprove = async (): Promise<void> => {
-        if(buyable?.status === false){
-            setLoading(true);
+    const clickApprove = async (role: string): Promise<void> => {
+        try {
             const iface:ContractInterface = new ethers.utils.Interface(ABI)
-            // const contract = new ethers.Contract(opthyData.swapperDetails.token, ABI, signer);
-            const txResponse: TransactionResponse = await contract.approve(
-                query.get("contractAddress"),
-                parseEther("1000000000000")
-            );
-            console.log("Transaction Response = ", txResponse);
-            const txReceipt: TransactionReceipt = await txResponse.wait();
-            await allowanceMutate(allowanceData, true);
-            setLoading(false);
-            // console.log("txReceipt = ", txReceipt)
-            // console.log("txReceipt log = ", txReceipt.logs[0])
-            // const event: LogDescription = iface.parseLog(txReceipt.logs[0])
-            // console.log("event = ", event)
+            if(role === "swapper"){
+                if(buyable?.status === false){
+                    setLoading(true);
+                    const contract = new ethers.Contract(opthyData.swapperDetails.token, ABI, signer);
+                    const txResponse: TransactionResponse = await contract.approve(
+                        query.get("contractAddress"),
+                        parseEther("1000000000000")
+                    );
+                    console.log("Swapper approve transaction = ", txResponse);
+                    const txReceipt: TransactionReceipt = await txResponse.wait();
+                    await allowanceMutate(allowanceData, true);
+                    setLoading(false);
+                    console.log("txReceipt = ", txReceipt)
+                    console.log("txReceipt log = ", txReceipt.logs[0])
+                    // const event: LogDescription = iface.parseLog(txReceipt.logs[0])
+                    // console.log("event = ", event)
+                } else {
+                    alert("Already aprroved. Please Buy")
+                }
+            }
+            if(role === "liquidity"){
+                if(liquidityBuyable?.status === false){
+                    setLiquidityLoading(true);
+                    const contract = new ethers.Contract(opthyData.liquidityProviderDetails.token, ABI, signer);
+                    const txResponse: TransactionResponse = await contract.approve(
+                        query.get("contractAddress"),
+                        parseEther("1000000000000")
+                    );
+                    console.log("Liquidity approve transaction = ", txResponse);
+                    const txReceipt: TransactionReceipt = await txResponse.wait();
+                    await allowanceMutate(allowanceData, true);
+                    setLiquidityLoading(false);
+                    console.log("txReceipt = ", txReceipt)
+                    console.log("txReceipt log = ", txReceipt.logs[0])
+                    // const event: LogDescription = iface.parseLog(txReceipt.logs[0])
+                    // console.log("event = ", event)
+                } else {
+                    alert("Already aprroved liquidity provider role. Please Buy")
+                }
+            }
+        } catch (error: any) {
+            alert(error.message);
+            console.error(error);
+        }
+        
+    }
+
+    const clickLiquidityBuyContract = async (): Promise<void> => {
+        if(liquidityBuyable?.status === true){
+            const liquidityAmount = formatUnits(opthyData.liquidityProviderDetails.feeAmount, opthyData.liquidityProviderDetails.decimals);
+            if(Number(liquidityAmount) > 0){
+                try {
+                    setLiquidityBuyLoading(true);
+                    // console.log("Yes Buyable", liquidityBuyable, query.get("contractAddress"), opthyData.liquidityProviderDetails.token,opthyData.liquidityProviderDetails.feeAmount);
+                    const contract = new ethers.Contract(query.get("contractAddress"), opthyABI, signer);
+                    const txResponse: TransactionResponse = await contract.buyLiquidityProviderRole(
+                        opthyData.liquidityProviderDetails.token,
+                        opthyData.liquidityProviderDetails.feeAmount
+                    );
+                    console.log("Buy Liquidity Transaction Response = ", txResponse);
+                    const txReceipt: TransactionReceipt = await txResponse.wait();
+                    setLiquidityBuyLoading(false);
+                    console.log("txReceipt = ", txReceipt)
+                    console.log("txReceipt log = ", txReceipt.logs[0])
+                } catch (error: any) {
+                    console.error(error);
+                    alert("Sorry! " + error.message);
+                }
+            } else {
+                alert("Sorry! This swapper role not buyable");
+            }
         } else {
-            alert("Already aprroved. Please Buy")
+            alert(liquidityBuyable?.message);
         }
     }
 
-    const clickBuyContract = () => {
-        if(buyable?.status === true){
-
-        } else {
-            alert(buyable?.message);
-        }
-    }
-
+    // Event Call
     // React.useEffect(() => {
     //     if(!ethereum) return
     //     if(!userCurrentAddress) return
@@ -242,7 +311,10 @@ const BuyContract: FC = () => {
                             <CardActions>
                                 <Grid container spacing={2} mt={0} justifyContent="center">
                                     <Grid item>
-                                        <Button onClick={clickBuyContract} size="medium" sx={{ m: 1 }} variant="contained" color="primary">Buy</Button>
+                                        {liquidityBuyLoading ? 
+                                            <Button size="medium" sx={{ m: 1 }} variant="contained" color="primary">Please wait...</Button> : 
+                                            <Button onClick={clickLiquidityBuyContract} size="medium" sx={{ m: 1 }} variant="contained" color="primary">Buy</Button>
+                                        }
                                     </Grid>
                                 </Grid>
                             </CardActions>
@@ -279,7 +351,7 @@ const BuyContract: FC = () => {
                                         loading === true ? 
                                         <Button size="medium" sx={{ m: 3 }} variant="contained" color="primary">Please wait...</Button>
                                         : 
-                                        <Button onClick={clickSwapperApprove} size="medium" sx={{ m: 3 }} variant="contained" color="primary">Approve {opthyData.swapperDetails.symbol} to Buy</Button>
+                                        <Button onClick={() => clickApprove("swapper")} size="medium" sx={{ m: 3 }} variant="contained" color="primary">Approve {opthyData.swapperDetails.symbol} to Buy</Button>
                                     :
                                     <Button size="medium" sx={{ m: 3 }} variant="contained" color="primary">Approved </Button>
                                     }
@@ -310,7 +382,15 @@ const BuyContract: FC = () => {
                                     <>
                                     <Typography align="center" variant="h5">Pay { parseFloat(formatUnits(opthyData.liquidityProviderDetails.feeAmount, opthyData.liquidityProviderDetails.decimals)).toFixed(2)} {opthyData.liquidityProviderDetails.symbol}</Typography>
                                     <Typography align="center">to become the Liquidity Provider</Typography>
-                                    <Button size="medium" sx={{ m: 3 }} variant="contained" color="primary">Approve {opthyData.liquidityProviderDetails.symbol} to Buy</Button>
+
+                                    {liquidityBuyable?.status === false ? 
+                                        liquidityLoading === true ? 
+                                        <Button size="medium" sx={{ m: 3 }} variant="contained" color="primary">Please wait...</Button>
+                                        : 
+                                        <Button onClick={() => clickApprove("liquidity")} size="medium" sx={{ m: 3 }} variant="contained" color="primary">Approve {opthyData.liquidityProviderDetails.symbol} to Buy</Button>
+                                    :
+                                    <Button size="medium" sx={{ m: 3 }} variant="contained" color="primary">Approved </Button>
+                                    }
                                     </>
                                 :   <>
                                     <Typography align="center" variant="h5">The Liquidity Provider Role</Typography>

@@ -9,6 +9,7 @@ import useSWR from 'swr';
 import { BigNumber, ethers } from 'ethers';
 import { name2ABI } from "src/utils/helpers";
 import { ChainId, ERC20, OpthyABI, Opthys, OpthysView } from 'opthy-v1-core';
+import { TransactionReceipt, TransactionResponse } from "@ethersproject/providers";
 // import { OPTHY_NETWORKS } from "src/utils/constants";
 // import { formatUnits, parseUnits } from '@ethersproject/units';
 
@@ -42,7 +43,7 @@ const Home: FC = () => {
     let MyOpthys = OpthyABI(ChainId.RinkebyTestnet);
     console.log("MyOpthys = ", MyOpthys);
 
-    const { data: opthys, mutate, isValidating } = useSWR([AllOpthys.ABI, AllOpthys.address, "all"]);
+    const { data: opthys, mutate: opthyMutate, isValidating } = useSWR([AllOpthys.ABI, AllOpthys.address, "all"]);
     // console.log(opthys, isValidating, 'isValidating');
 
     // const myContract = new ethers.Contract(userCurrentAddress);
@@ -71,12 +72,25 @@ const Home: FC = () => {
         );
 
         await transaction.wait();
-        await mutate(opthys, true);
+        await opthyMutate(opthys, true);
+    }
+
+    const setLiquidityProviderFee = async (): Promise<void> => {
+        const contract = new ethers.Contract("0x1Da9c71671f292819aE4680DA58d0a410BD1a009", MyOpthys, signer);
+        const txResponse: TransactionResponse = await contract.setLiquidityProviderFee(
+            "0x7Af456bf0065aADAB2E6BEc6DaD3731899550b84",
+            "10000000000000000000"
+        );
+        console.log("setLiquidityProviderFee Transaction Response = ", txResponse);
+        const txReceipt: TransactionReceipt = await txResponse.wait();
+        console.log("txReceipt = ", txReceipt)
+        console.log("txReceipt log = ", txReceipt.logs[0])
     }
     React.useEffect(() => {
+        // setLiquidityProviderFee();
         // createOpthy()
-        // mutate(opthys, true);
-        // mutate(sendData, true);
+        // opthyMutate(opthys, true);
+        // opthyMutate(sendData, true);
     }, []);
 
     if(isValidating === true){

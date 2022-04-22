@@ -133,6 +133,7 @@ export const OpthyCard: FC<CardProps> = ({ data, calledFrom, buyableProp }: Card
     const convertToken0Cur = CURRENCY_CONVERT(result.token0.symbol);
     const convertToken1Cur = CURRENCY_CONVERT(result.token1.symbol);
     const convertSwapCur = CURRENCY_CONVERT(result.swapperDetails.symbol);
+    const convertLiquidityCur = CURRENCY_CONVERT(result.liquidityProviderDetails.symbol);
 
     const newCal = Number(formatUnits(balanceT0, token_0.decimals)) / Number(formatUnits(rT0, token_0.decimals));
     const newCal2 = Number(formatUnits(balanceT1, token_1.decimals)) / Number(formatUnits(rT1, token_1.decimals));
@@ -144,9 +145,9 @@ export const OpthyCard: FC<CardProps> = ({ data, calledFrom, buyableProp }: Card
         return Number(n) === n && n % 1 !== 0;
     }
 
-    // let { ethereum } = window;
-    // const provider = new ethers.providers.Web3Provider(ethereum);
-    // const signer = provider.getSigner();
+    let { ethereum } = window;
+    const provider = new ethers.providers.Web3Provider(ethereum);
+    const signer = provider.getSigner();
 
     const clickBuyContract = async (): Promise<void> => {
         if(buyableProp?.status === true){
@@ -155,9 +156,6 @@ export const OpthyCard: FC<CardProps> = ({ data, calledFrom, buyableProp }: Card
                 try {
                     setSwapperBuyLoading(true);
                     // console.log("Yes Buyable", buyableProp, result.address, balanceT0, balanceT1, result.swapperDetails.token,result.swapperDetails.feeAmount);
-                    let { ethereum } = window;
-                    const provider = new ethers.providers.Web3Provider(ethereum);
-                    const signer = provider.getSigner();
                     const contract = new ethers.Contract(result.address, opthyABI, signer);
                     const txResponse: TransactionResponse = await contract.buySwapperRole(
                         balanceT0,
@@ -167,7 +165,7 @@ export const OpthyCard: FC<CardProps> = ({ data, calledFrom, buyableProp }: Card
                     );
                     console.log("Buy Transaction Response = ", txResponse);
                     const txReceipt: TransactionReceipt = await txResponse.wait();
-                    setSwapperBuyLoading(true);
+                    setSwapperBuyLoading(false);
                     console.log("txReceipt = ", txReceipt)
                     console.log("txReceipt log = ", txReceipt.logs[0])
                 } catch (error: any) {
@@ -284,6 +282,27 @@ export const OpthyCard: FC<CardProps> = ({ data, calledFrom, buyableProp }: Card
                             </Paper>    
                         </Grid>
                     </Grid></> : "" }
+                    { Number(formatUnits(liquidityProviderFeeAmount, result.liquidityProviderDetails.decimals)) > 0 ? 
+                    <>
+                    <Divider/>
+                    <Grid container spacing={2} mt={0}>
+                        <Grid item xs={6}>
+                            <Paper elevation={0} className={classes.paperTransparent}>
+                                <Typography variant="body2" color="text.secondary"> Price: </Typography>
+                                <Box p={1}>
+                                    <Typography gutterBottom variant="body2">{ Number(formatUnits(liquidityProviderFeeAmount, result.liquidityProviderDetails.decimals))} {result.liquidityProviderDetails.symbol}</Typography>
+                                </Box>
+                            </Paper>
+                        </Grid>
+                        <Grid item xs={6}>
+                            <Paper elevation={0} className={classes.paperTransparent}>
+                                <Typography variant="body2" color="text.secondary"> &nbsp; </Typography>
+                                <Box mt={1}>
+                                    <Typography gutterBottom variant="body2" color="text.secondary">~ ${convertLiquidityCur?.currencyIsValidating ? 0 : (Number(formatUnits(liquidityProviderFeeAmount, result.liquidityProviderDetails.decimals)) * convertLiquidityCur?.convertResult?.Price).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,')} USD</Typography>
+                                </Box>
+                            </Paper>    
+                        </Grid>
+                    </Grid></> : "" }
                 </CardContent>
             {/* </CardActionArea> */}
             <CardActions>
@@ -295,9 +314,11 @@ export const OpthyCard: FC<CardProps> = ({ data, calledFrom, buyableProp }: Card
                             </Link>
                         </Grid>: "" 
                     }
-                    { calledFrom === "buyContract" ?
+                    { calledFrom === "buyContract" && Number(formatUnits(swapperFeeAmount, result.swapperDetails.decimals)) > 0 ?
                         <Grid item>
+                            {swapperBuyLoading ? <Button size="medium" sx={{ m: 1 }} variant="contained" color="primary">Please wait...</Button> : 
                             <Button onClick={clickBuyContract} size="medium" sx={{ m: 1 }} variant="contained" color="primary">Buy</Button>
+                            }
                         </Grid>: "" 
                     }
                     { calledFrom === "contract" ?<>
