@@ -219,6 +219,34 @@ const BuyContract: FC = () => {
         }
     }
 
+    React.useEffect(() => {
+        getData();
+        async function getData(){
+            const iface:ContractInterface = new ethers.utils.Interface(ABI)
+            const logs = await getPastEvents();
+            console.log("logs = ", logs)   
+            const decodedEvents = logs.map(log => {
+                // console.log("log = ", log.data);
+                iface.parseLog(log)
+                // iface.decodeEventLog("Transfer", log.data)
+            });  
+            console.log("decodedEvents = ", decodedEvents)  
+            const toAddresses = decodedEvents.map(event => console.log(event));
+            const fromAddresses = decodedEvents.map(event => event["values"]["from"]);
+            const amounts = decodedEvents.map(event => event["values"]["value"]);
+            console.log("fromAddresses = ", fromAddresses, "toAddresses = ", toAddresses, "amounts = ", amounts);
+        }
+        async function getPastEvents(){
+            // const iface:ContractInterface = new ethers.utils.Interface(ABI)
+            return provider.getLogs({
+                fromBlock: 0,
+                toBlock: "latest",
+                address: query.get("contractAddress"),
+                // topics: [null],
+            });
+        }
+    }, []);
+
     // Event Call
     // React.useEffect(() => {
     //     if(!ethereum) return
