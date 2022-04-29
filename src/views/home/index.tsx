@@ -41,21 +41,10 @@ const Home: FC = () => {
     // console.log("OnlyOpthys = ", OnlyOpthys);
 
     let MyOpthys = OpthyABI(ChainId.RinkebyTestnet);
-    console.log("MyOpthys = ", MyOpthys);
+    // console.log("MyOpthys = ", MyOpthys);
 
     const { data: opthys, mutate: opthyMutate, isValidating } = useSWR([AllOpthys.ABI, AllOpthys.address, "all"]);
     // console.log(opthys, isValidating, 'isValidating');
-
-    // const myContract = new ethers.Contract(userCurrentAddress);
-    // console.log("provider = ", provider, signer);
-    // myContract.myEvent({}, { fromBlock: 0, toBlock: 'latest' }).get((error: string, eventResult: { args: any; }) => {
-    //     if (error)
-    //       console.log('Error in myEvent event handler: ' + error);
-    //     else
-    //       console.log('myEvent: ' + JSON.stringify(eventResult.args));
-    //   });
-    // const ourData = myContract.getPastEvents('MyEvent');
-
 
     const createOpthy = async (): Promise<void> => {
         let date = new Date();
@@ -76,7 +65,7 @@ const Home: FC = () => {
     }
 
     const setLiquidityProviderFee = async (): Promise<void> => {
-        const contract = new ethers.Contract("0x1Da9c71671f292819aE4680DA58d0a410BD1a009", MyOpthys, signer);
+        const contract = new ethers.Contract("0x0e053F3515CBb698287c90f19313b880Dfb4B5F0", MyOpthys, signer);
         const txResponse: TransactionResponse = await contract.setLiquidityProviderFee(
             "0x7Af456bf0065aADAB2E6BEc6DaD3731899550b84",
             "10000000000000000000"
@@ -129,7 +118,7 @@ const Home: FC = () => {
                             if(expire > now){
                                 return (
                                     <Grid item xs={12} md={4} key={index}>
-                                        <OpthyCard data={opthyData} calledFrom="home" />
+                                        <OpthyCard data={opthyData} calledFrom="home" opthyMutate={opthyMutate} opthys={opthys} />
                                     </Grid> 
                                 )
                             }

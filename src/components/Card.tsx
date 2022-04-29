@@ -53,9 +53,12 @@ interface CardProps {
     data: any;
     calledFrom: string;
     buyableProp?: {status: boolean, message: string};
+    liquidityBuy?: boolean;
+    opthyMutate?: any;
+    opthys?: any
 }
 
-export const OpthyCard: FC<CardProps> = ({ data, calledFrom, buyableProp }: CardProps) => {
+export const OpthyCard: FC<CardProps> = ({ data, calledFrom, buyableProp, liquidityBuy, opthyMutate, opthys }: CardProps) => {
     const classes = useStyles();
     // const { userCurrentAddress } = useEthersState();
     // const [balance, setBalance] = React.useState<string | undefined>()
@@ -68,7 +71,7 @@ export const OpthyCard: FC<CardProps> = ({ data, calledFrom, buyableProp }: Card
 
 
     let result: any = {}
-    const { opthy: contractAddress, expiration, token0, token1, swapper, swapperFeeAmount, swapperFeeToken, liquidityProvider, liquidityProviderFeeAmount, liquidityProviderFeeToken, balanceT0, balanceT1, rT0, rT1 } = data;
+    let { opthy: contractAddress, expiration, token0, token1, swapper, swapperFeeAmount, swapperFeeToken, liquidityProvider, liquidityProviderFeeAmount, liquidityProviderFeeToken, balanceT0, balanceT1, rT0, rT1 } = data;
     // console.log("allData = ",contractAddress, expiration, token0, token1, swapperFeeToken, balanceT0, balanceT1, rT0, rT1);
     result.address = contractAddress;
     
@@ -165,7 +168,9 @@ export const OpthyCard: FC<CardProps> = ({ data, calledFrom, buyableProp }: Card
                     );
                     console.log("Buy Transaction Response = ", txResponse);
                     const txReceipt: TransactionReceipt = await txResponse.wait();
+                    swapperFeeAmount = parseEther("0");
                     setSwapperBuyLoading(false);
+                    await opthyMutate(opthys, true);
                     console.log("txReceipt = ", txReceipt)
                     console.log("txReceipt log = ", txReceipt.logs[0])
                 } catch (error: any) {
@@ -282,7 +287,7 @@ export const OpthyCard: FC<CardProps> = ({ data, calledFrom, buyableProp }: Card
                             </Paper>    
                         </Grid>
                     </Grid></> : "" }
-                    { Number(formatUnits(liquidityProviderFeeAmount, result.liquidityProviderDetails.decimals)) > 0 ? 
+                    { !liquidityBuy && Number(formatUnits(liquidityProviderFeeAmount, result.liquidityProviderDetails.decimals)) > 0 ? 
                     <>
                     <Divider/>
                     <Grid container spacing={2} mt={0}>
@@ -309,7 +314,7 @@ export const OpthyCard: FC<CardProps> = ({ data, calledFrom, buyableProp }: Card
                 <Grid container spacing={2} mt={0} justifyContent="center">
                     { calledFrom === "home" ?
                         <Grid item>
-                            <Link to={"buy-contract?contractAddress=" + result.address + "&expiration=" + expiration + "&balanceT0=" + balanceT0 + "&balanceT1=" + balanceT1 + "&rT0=" + rT0 + "&rT1=" + rT1 + "&opthyDetails=" + JSON.stringify(result) }>
+                            <Link to={"buy-contract?contractAddress=" + result.address + "&expiration=" + expiration + "&balanceT0=" + balanceT0 + "&balanceT1=" + balanceT1 + "&rT0=" + rT0 + "&rT1=" + rT1 + "&opthyDetails=" + JSON.stringify(result) + "&opthyMutate=" + opthyMutate + "&opthys=" + opthys }>
                                 <Button size="medium" sx={{ m: 1 }} variant="contained" color="primary">View Offer</Button>
                             </Link>
                         </Grid>: "" 

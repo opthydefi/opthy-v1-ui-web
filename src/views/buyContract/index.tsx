@@ -18,6 +18,7 @@ import {ContractInterface, ethers} from "ethers";
 import { TransactionReceipt, TransactionResponse } from "@ethersproject/providers";
 import { LogDescription } from "ethers/lib/utils";
 import useSWR from 'swr';
+import moment from 'moment';
 
 declare let window:any
 
@@ -69,12 +70,16 @@ const BuyContract: FC = () => {
     const [liquidityBuyLoading, setLiquidityBuyLoading] = React.useState<boolean>(false);
     const [buyable, setBuyable] = React.useState<buyContract>({status: false, message: "Please approve before Buy."})
     const [liquidityBuyable, setLiquidityBuyable] = React.useState<buyContract>({status: false, message: "Please approve before Buy."})
+    const [liquidityBuy, setLiquidityBuy] = React.useState<boolean>(false);
+    const [transactionLog, setTransactionLog] = React.useState<Array<{}>>([]);
 
     function useQuery() {
         return new URLSearchParams(useLocation().search);
     }
     const query: any = useQuery();
     const opthyData: any = JSON.parse(query.get("opthyDetails"));
+    const opthyMutate = query.get("opthyMutate");
+    const opthys = query.get("opthys");
 
     const { data: allowanceData, mutate: allowanceMutate, isValidating: allowanceValidating } = useSWR([ABI, opthyData.swapperDetails.token, "allowance", userCurrentAddress, query.get("contractAddress") ]);
     // console.log("allowance mutate Response = ", allowanceValidating, allowanceData);
@@ -154,6 +159,7 @@ const BuyContract: FC = () => {
                     console.log("Swapper approve transaction = ", txResponse);
                     const txReceipt: TransactionReceipt = await txResponse.wait();
                     await allowanceMutate(allowanceData, true);
+                    await opthyMutate(opthys, true);
                     setLoading(false);
                     console.log("txReceipt = ", txReceipt)
                     console.log("txReceipt log = ", txReceipt.logs[0])
@@ -205,6 +211,8 @@ const BuyContract: FC = () => {
                     console.log("Buy Liquidity Transaction Response = ", txResponse);
                     const txReceipt: TransactionReceipt = await txResponse.wait();
                     setLiquidityBuyLoading(false);
+                    setLiquidityBuy(true);
+                    // await opthyMutate(opthys, true);
                     console.log("txReceipt = ", txReceipt)
                     console.log("txReceipt log = ", txReceipt.logs[0])
                 } catch (error: any) {
@@ -220,32 +228,28 @@ const BuyContract: FC = () => {
     }
 
     React.useEffect(() => {
-        getData();
-        async function getData(){
-            const iface:ContractInterface = new ethers.utils.Interface(ABI)
-            const logs = await getPastEvents();
-            console.log("logs = ", logs)   
-            const decodedEvents = logs.map(log => {
-                // console.log("log = ", log.data);
-                iface.parseLog(log)
-                // iface.decodeEventLog("Transfer", log.data)
-            });  
-            console.log("decodedEvents = ", decodedEvents)  
-            const toAddresses = decodedEvents.map(event => console.log(event));
-            const fromAddresses = decodedEvents.map(event => event["values"]["from"]);
-            const amounts = decodedEvents.map(event => event["values"]["value"]);
-            console.log("fromAddresses = ", fromAddresses, "toAddresses = ", toAddresses, "amounts = ", amounts);
-        }
+        getPastEvents();
         async function getPastEvents(){
-            // const iface:ContractInterface = new ethers.utils.Interface(ABI)
-            return provider.getLogs({
-                fromBlock: 0,
-                toBlock: "latest",
-                address: query.get("contractAddress"),
-                // topics: [null],
-            });
+            try {
+                const logs = await provider.getLogs({
+                    fromBlock: 0,
+                    toBlock: "latest",
+                    address: query.get("contractAddress"),
+                    // topics: [null],
+                });
+                const newLogs = logs.map(async function(log) {
+                    const logData = await provider.getTransactionReceipt(log.transactionHash);
+                    logData['timestamp'] = (await provider.getBlock(logData.blockNumber)).timestamp;
+                    return logData;
+                })
+                const getAllLogs = await Promise.all(newLogs);
+                console.log("getAllLogs = ", getAllLogs);
+                setTransactionLog(getAllLogs)
+            } catch (error) {
+                console.log(error);
+            }
         }
-    }, []);
+    }, [liquidityBuy]);
 
     // Event Call
     // React.useEffect(() => {
@@ -302,7 +306,7 @@ const BuyContract: FC = () => {
                 <Grid container spacing={2}>                   
                     {/* Opthy card loop  */}
                     <Grid item xs={12} md={4}>
-                        <OpthyCard data={opthyDetails} calledFrom="buyContract" buyableProp={buyable}/>
+                        <OpthyCard data={opthyDetails} calledFrom="buyContract" buyableProp={buyable} liquidityBuy={liquidityBuy} />
                     </Grid>
                     {/* Opthy card loop  */}
                     <Grid item xs={12} md={4}>
@@ -341,7 +345,8 @@ const BuyContract: FC = () => {
                                     <Grid item>
                                         {liquidityBuyLoading ? 
                                             <Button size="medium" sx={{ m: 1 }} variant="contained" color="primary">Please wait...</Button> : 
-                                            <Button onClick={clickLiquidityBuyContract} size="medium" sx={{ m: 1 }} variant="contained" color="primary">Buy</Button>
+                                            !liquidityBuy ? 
+                                            <Button onClick={clickLiquidityBuyContract} size="medium" sx={{ m: 1 }} variant="contained" color="primary">Buy</Button> : ""
                                         }
                                     </Grid>
                                 </Grid>
@@ -443,13 +448,14 @@ const BuyContract: FC = () => {
                 </Grid>
                 <Grid container spacing={2}>
                     <Grid item xs={12} m={1}>
+                    { transactionLog?.length > 0 ?
                     <List sx={{ width: '100%', maxWidth: 800, bgcolor: 'background.paper' }}>
-                    {/* {[1, 2, 3].map((value) => ( */}
+                    {transactionLog.map((log: any, index: any) => (
                         <ListItem
-                        key={1}
+                        key={index}
                         >
-                            <ListItemText sx={{ width: 100 }} primary={`2022-05-04`} />
-                            <ListItemText sx={{ width: 100 }} primary={`17:46`} />
+                            <ListItemText sx={{ width: 100 }} primary={`${moment.unix(log.timestamp).format("YYYY-MM-DD")}`} />
+                            <ListItemText sx={{ width: 100 }} primary={`${moment.unix(log.timestamp).format("HH:mm")}`} />
                             <ListItemText sx={{
                                 width: 600,
                                 padding: '4px 15px 4px 15px',
@@ -463,31 +469,12 @@ const BuyContract: FC = () => {
                                 theme.palette.mode === 'dark' ? 'grey.300' : 'grey.800',
                                 borderColor: (theme) =>
                                 theme.palette.mode === 'dark' ? 'grey.800' : 'grey.300',
-                            }} primary={`Contract bought by: 45ab5471485cfaadeccabdef25631aef`} />
+                            }} primary={`Contract Transaction Hash: ${log.transactionHash}`} />
                         </ListItem>
-                        <ListItem
-                        key={2}
-                        >
-                            <ListItemText sx={{ width: 100 }} primary={`2022-05-04`} />
-                            <ListItemText sx={{ width: 100 }} primary={`17:46`} />
-                            <ListItemText sx={{ 
-                                width: 600,
-                                padding: '4px 15px 4px 15px',
-                                border: '1px solid',
-                                bgcolor: (theme) =>
-                                theme.palette.mode === 'dark' ? '#0f69b78c' : 'grey.100', 
-                                borderRadius: 2,
-                                fontSize: '0.875rem',
-                                fontWeight: '700',
-                                color: (theme) =>
-                                theme.palette.mode === 'dark' ? 'grey.300' : 'grey.800',
-                                borderColor: (theme) =>
-                                theme.palette.mode === 'dark' ? 'grey.800' : 'grey.300',
-                            }} primary={`Contract created by you as a seller`} />
-                        </ListItem>
-                        
-                    {/* ))} */}
+                    ))}
                     </List>
+                    : <Typography variant="h4">No Transaction Found</Typography>
+                    }
                     </Grid>
                 </Grid>
             </Box>
