@@ -142,6 +142,9 @@ const Contract: FC = () => {
                     </Grid>       
                 </Grid>
             </Box>
+
+
+            
             <Box m={2}>
                 <Grid container spacing={2}>
                     <Grid item xs={12} m={1}>
@@ -269,6 +272,9 @@ const Contract: FC = () => {
                     </Grid>
                 </Grid>
             </Box>
+
+
+
             <Box m={2}>
                 <Grid container spacing={2}>
                     <Grid item xs={12} m={1}>

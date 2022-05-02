@@ -144,6 +144,8 @@ export const OpthyCard: FC<CardProps> = ({ data, calledFrom, buyableProp, liquid
     result.bar2 = (Number(newCal2) / (Number(newCal) + Number(newCal2))) * 100;
     // console.log("newCal = ", result.bar1, result.bar2);
 
+    // console.log("result = ", result);
+
     function isFloat(n: number){
         return Number(n) === n && n % 1 !== 0;
     }
@@ -196,14 +198,14 @@ export const OpthyCard: FC<CardProps> = ({ data, calledFrom, buyableProp, liquid
                     }
                     {/* <Box> */}
                     <Grid container justifyContent="space-between" alignItems="center">
-                        <Grid item xs={1}>
-                            <Typography variant="h5">DAI</Typography>
+                        <Grid item xs={1.5}>
+                            <Typography variant="h5">{result.token0.symbol}</Typography>
                         </Grid>
-                        <Grid item xs={9}>
+                        <Grid item xs={8}>
                             <BorderLinearProgress className={classes.customProgress} variant="determinate" value={result.bar1} />
                         </Grid>
-                        <Grid item xs={1}>
-                            <Typography align="right" variant="h5">ETH</Typography>
+                        <Grid item xs={1.5}>
+                            <Typography align="right" variant="h5">{result.token1.symbol}</Typography>
                         </Grid>
                     </Grid>
                     {/* </Box> */}
@@ -314,7 +316,7 @@ export const OpthyCard: FC<CardProps> = ({ data, calledFrom, buyableProp, liquid
                 <Grid container spacing={2} mt={0} justifyContent="center">
                     { calledFrom === "home" ?
                         <Grid item>
-                            <Link to={"buy-contract?contractAddress=" + result.address + "&expiration=" + expiration + "&balanceT0=" + balanceT0 + "&balanceT1=" + balanceT1 + "&rT0=" + rT0 + "&rT1=" + rT1 + "&opthyDetails=" + JSON.stringify(result) + "&opthyMutate=" + opthyMutate + "&opthys=" + opthys }>
+                            <Link to={"buy-contract?contractAddress=" + result.address + "&expiration=" + expiration + "&balanceT0=" + balanceT0 + "&balanceT1=" + balanceT1 + "&rT0=" + rT0 + "&rT1=" + rT1 + "&opthyDetails=" + JSON.stringify(result) }>
                                 <Button size="medium" sx={{ m: 1 }} variant="contained" color="primary">View Offer</Button>
                             </Link>
                         </Grid>: "" 
