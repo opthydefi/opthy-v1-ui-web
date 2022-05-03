@@ -21,6 +21,7 @@ import { TransactionReceipt, TransactionResponse } from "@ethersproject/provider
 import { LogDescription } from "ethers/lib/utils";
 import useSWR from 'swr';
 import moment from 'moment';
+import { LoadingButton } from "@mui/lab";
 
 declare let window:any
 
@@ -71,6 +72,7 @@ const BuyContract: FC = () => {
     const [buyable, setBuyable] = React.useState<buyContract>({status: false, message: "Please approve before Buy."})
     const [liquidityBuyable, setLiquidityBuyable] = React.useState<buyContract>({status: false, message: "Please approve before Buy."})
     const [liquidityBuy, setLiquidityBuy] = React.useState<boolean>(false);
+    const [swapperBuy, setSwapperBuy] = React.useState<boolean>(false);
     const [transactionLog, setTransactionLog] = React.useState<Array<{}>>([]);
 
     function useQuery() {
@@ -163,13 +165,13 @@ const BuyContract: FC = () => {
                     return logData;
                 })
                 const getAllLogs = await Promise.all(newLogs);
-                console.log("getAllLogs = ", getAllLogs);
+                // console.log("getAllLogs = ", getAllLogs);
                 setTransactionLog(getAllLogs)
             } catch (error) {
                 console.log(error);
             }
         }
-    }, [liquidityBuy]);
+    }, [swapperBuy, liquidityBuy]);
 
     // Event Call
     // React.useEffect(() => {
@@ -226,7 +228,7 @@ const BuyContract: FC = () => {
                 <Grid container spacing={2}>                   
                     {/* Opthy card loop  */}
                     <Grid item xs={12} md={4}>
-                        <OpthyCard data={opthyDetails} calledFrom="buyContract" buyableProp={buyable} liquidityBuy={liquidityBuy} />
+                        <OpthyCard data={opthyDetails} calledFrom="buyContract" buyableProp={buyable} liquidityBuy={liquidityBuy} swapperBuy={swapperBuy} setSwapperBuy={setSwapperBuy} />
                     </Grid>
                     {/* Opthy card loop  */}
                     <Grid item xs={12} md={4}>
@@ -264,7 +266,7 @@ const BuyContract: FC = () => {
                                 <Grid container spacing={2} mt={0} justifyContent="center">
                                     <Grid item>
                                         {liquidityBuyLoading ? 
-                                            <Button size="medium" sx={{ m: 1 }} variant="contained" color="primary">Please wait...</Button> : 
+                                            <LoadingButton sx={{ m: 1 }} loading variant="outlined"> Submit </LoadingButton> : 
                                             !liquidityBuy ? 
                                             <Button onClick={clickLiquidityBuyContract} size="medium" sx={{ m: 1 }} variant="contained" color="primary">Buy</Button> : ""
                                         }
@@ -276,95 +278,11 @@ const BuyContract: FC = () => {
                     </Grid>        
                 </Grid>
             </Box>
-
-            <Buy contractAddress={query.get("contractAddress")} swapperDetails={opthyData.swapperDetails} liquidityProviderDetails={opthyData.liquidityProviderDetails} buyable={buyable} setBuyable={setBuyable} liquidityBuyable={liquidityBuyable} setLiquidityBuyable={setLiquidityBuyable} />
-
+            { swapperBuy || liquidityBuy ?
             <Swap data={opthyData} />
-
-            {/* <Box m={2}>
-                <Grid container spacing={2}>
-                    <Grid item xs={12} m={1}>
-                        <Typography variant="h6">Buy this Contract?</Typography>
-                    </Grid>
-                </Grid>
-                <Grid container spacing={2}> 
-                    <Grid item xs={12} md={6}>
-                        <Card sx={{ m: 1, borderRadius: '10px' }}>
-                            <Box className={classes.boxHeader2} sx={{backgroundColor: 'success.dark'}}>
-                                <Typography align="center" style={{lineHeight: "2.0"}} variant="h6">SWAPPER</Typography>
-                            </Box>
-                            <CardContent>
-                                <Box m={5}>
-                                    <Divider />
-                                </Box>
-                                <Box textAlign='center' m={5}>
-
-                                { Number(formatUnits(opthyData.swapperDetails.feeAmount, opthyData.swapperDetails.decimals)) > 0 ? 
-                                    <>
-                                    <Typography align="center" variant="h5">Pay { parseFloat(formatUnits(opthyData.swapperDetails.feeAmount, opthyData.swapperDetails.decimals)).toFixed(2)} {opthyData.swapperDetails.symbol}</Typography>
-                                    <Typography align="center">to become the Swapper</Typography>
-
-                                    {buyable?.status === false ? 
-                                        loading === true ? 
-                                        <Button size="medium" sx={{ m: 3 }} variant="contained" color="primary">Please wait...</Button>
-                                        : 
-                                        <Button onClick={() => clickApprove("swapper")} size="medium" sx={{ m: 3 }} variant="contained" color="primary">Approve {opthyData.swapperDetails.symbol} to Buy</Button>
-                                    :
-                                    <Button size="medium" sx={{ m: 3 }} variant="contained" color="primary">Approved </Button>
-                                    }
-                                    </>
-                                :   <>
-                                    <Typography align="center" variant="h5">The Swapper Role</Typography>
-                                    <Typography align="center">is not on offer</Typography>
-                                    </>
-                                }
-                                </Box>
-                                <Box m={5}>
-                                    <Divider />
-                                </Box>
-                            </CardContent>
-                        </Card>
-                    </Grid>
-                    <Grid item xs={12} md={6}>
-                        <Card sx={{ m: 1, borderRadius: '10px', minHeight: 386 }}>
-                            <Box className={classes.boxHeader2} sx={{backgroundColor: 'warning.dark'}}>
-                                <Typography align="center" style={{lineHeight: "2.0"}} variant="h6">LIQUIDITY PROVIDER</Typography>
-                            </Box>
-                            <CardContent>
-                                <Box m={5}>
-                                    <Divider />
-                                </Box>
-                                <Box textAlign='center' m={5}>
-                                { Number(formatUnits(opthyData.liquidityProviderDetails.feeAmount, opthyData.liquidityProviderDetails.decimals)) > 0 ? 
-                                    <>
-                                    <Typography align="center" variant="h5">Pay { parseFloat(formatUnits(opthyData.liquidityProviderDetails.feeAmount, opthyData.liquidityProviderDetails.decimals)).toFixed(2)} {opthyData.liquidityProviderDetails.symbol}</Typography>
-                                    <Typography align="center">to become the Liquidity Provider</Typography>
-
-                                    {liquidityBuyable?.status === false ? 
-                                        liquidityLoading === true ? 
-                                        <Button size="medium" sx={{ m: 3 }} variant="contained" color="primary">Please wait...</Button>
-                                        : 
-                                        <Button onClick={() => clickApprove("liquidity")} size="medium" sx={{ m: 3 }} variant="contained" color="primary">Approve {opthyData.liquidityProviderDetails.symbol} to Buy</Button>
-                                    :
-                                    <Button size="medium" sx={{ m: 3 }} variant="contained" color="primary">Approved </Button>
-                                    }
-                                    </>
-                                :   <>
-                                    <Typography align="center" variant="h5">The Liquidity Provider Role</Typography>
-                                    <Typography align="center">is not on offer</Typography>
-                                    </>
-                                }
-                                </Box>
-                                <Box m={5}>
-                                    <Divider />
-                                </Box>
-                            </CardContent>
-                        </Card>
-                    </Grid>                  
-                </Grid>
-            </Box> */}
-
-
+            :
+            <Buy contractAddress={query.get("contractAddress")} swapperDetails={opthyData.swapperDetails} liquidityProviderDetails={opthyData.liquidityProviderDetails} buyable={buyable} setBuyable={setBuyable} liquidityBuyable={liquidityBuyable} setLiquidityBuyable={setLiquidityBuyable} /> 
+            }
 
             <Box m={2}>
                 <Grid container spacing={2}>

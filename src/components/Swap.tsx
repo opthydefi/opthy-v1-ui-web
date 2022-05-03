@@ -9,6 +9,8 @@ import type { Theme } from 'src/types/theme';
 import makeStyles from '@mui/styles/makeStyles';
 import { useEthersState } from 'src/contexts/EthereumContext';
 import {ContractInterface, ethers} from "ethers";
+import { CURRENCY_CONVERT } from "src/utils/helpers";
+import { formatUnits, parseEther, parseUnits } from '@ethersproject/units';
 
 declare let window:any
 // const { address, ABI } = ERC20(ChainId.RinkebyTestnet);
@@ -50,17 +52,18 @@ interface SwapProps {
 }
 
 export const Swap: FC<SwapProps> = ({ data }: SwapProps) => {
-    console.log("data = ", data);
+    // console.log("data = ", data);
     const classes = useStyles();
     const { userCurrentAddress } = useEthersState();
     let { ethereum } = window;
     const provider = new ethers.providers.Web3Provider(ethereum);
     const signer = provider.getSigner();
 
-    const [dai, setDai] = React.useState('');
-    const [dai2, setDai2] = React.useState('');
-    const [open, setOpen] = React.useState(false);
-    const [open2, setOpen2] = React.useState(false);
+    const [dai, setDai] = React.useState<string>('');
+    const [dai2, setDai2] = React.useState<string>('');
+    const [open, setOpen] = React.useState<boolean>(false);
+    const [open2, setOpen2] = React.useState<boolean>(false);
+    const [userBalance, setUserBalance] = React.useState<string | undefined>()
 
     const handleChange = (event: { target: { value: React.SetStateAction<string> } }) => {
         setDai(event.target.value);
@@ -87,6 +90,13 @@ export const Swap: FC<SwapProps> = ({ data }: SwapProps) => {
     const handleOpen2 = () => {
         setOpen2(true);
     };
+
+    const convertToken0Cur = CURRENCY_CONVERT(data.token0.symbol);
+    const convertToken1Cur = CURRENCY_CONVERT(data.token1.symbol);
+    provider.getBalance(userCurrentAddress)
+    .then((result)=> {
+        setUserBalance(ethers.utils.formatEther(result))
+    });
 
     return (
         <>
@@ -170,7 +180,7 @@ export const Swap: FC<SwapProps> = ({ data }: SwapProps) => {
                                 <Grid item xs={12}>
                                     <Box>
                                         <Typography m={1} sx={{display: 'inline-block'}}>Quantity: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</Typography>
-                                        <Typography sx={{display: 'inline-block'}} gutterBottom variant="body2">~ $670,000.00 USD</Typography>
+                                        <Typography sx={{display: 'inline-block'}} gutterBottom variant="body2">~ ${((dai2 === data.token0.symbol) ? convertToken0Cur?.currencyIsValidating ? 0 : (Number(formatUnits(data.token0.balance, data.token0.decimals)) * convertToken0Cur?.convertResult?.Price).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,'): convertToken1Cur?.currencyIsValidating ? 0 : (Number(formatUnits(data.token1.balance, data.token1.decimals)) * convertToken1Cur?.convertResult?.Price).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,'))} USD</Typography>
                                     </Box>
                                     <FormControl sx={{ m: 1, width: 350 }}>
                                         <InputLabel id="demo-controlled-open-select-label2">{data.token1.symbol}</InputLabel>
@@ -204,7 +214,7 @@ export const Swap: FC<SwapProps> = ({ data }: SwapProps) => {
                 <Grid item xs={12} >
                     <Card sx={{ m: 1, borderRadius: '10px' }}>
                         <CardContent>
-                            <Typography m={1} variant="body2" align="center" > Contract balance after: 60,000.00 DAI / 9000000000 BTC </Typography>
+                            <Typography m={1} variant="body2" align="center" > User Balance after: {userBalance} ETH </Typography>
                         </CardContent>
                     </Card>
                 </Grid>
@@ -212,13 +222,13 @@ export const Swap: FC<SwapProps> = ({ data }: SwapProps) => {
             </Grid>
             
         </Box>
-        <Box m={2} mt={-1}>
+        {/* <Box m={2} mt={-1}>
             <Grid container justifyContent="center">
                 <Grid item>
                     <Button size="medium" variant="contained" color="primary">Approve DAI to Buy</Button>
                 </Grid>
             </Grid>
-        </Box>
+        </Box> */}
         </>
     )
 }

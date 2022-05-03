@@ -19,6 +19,7 @@ import { Link } from "react-router-dom";
 import { ChainId, ERC20, OpthyABI } from 'opthy-v1-core';
 import useSWR from 'swr';
 import { TransactionReceipt, TransactionResponse } from "@ethersproject/providers";
+import { LoadingButton } from "@mui/lab";
 
 declare let window:any
 // const ERCMetaData = ERC20(ChainId.RinkebyTestnet);
@@ -54,11 +55,13 @@ interface CardProps {
     calledFrom: string;
     buyableProp?: {status: boolean, message: string};
     liquidityBuy?: boolean;
+    swapperBuy?: boolean;
+    setSwapperBuy?: any;
     opthyMutate?: any;
     opthys?: any
 }
 
-export const OpthyCard: FC<CardProps> = ({ data, calledFrom, buyableProp, liquidityBuy, opthyMutate, opthys }: CardProps) => {
+export const OpthyCard: FC<CardProps> = ({ data, calledFrom, buyableProp, liquidityBuy, swapperBuy, setSwapperBuy, opthyMutate, opthys }: CardProps) => {
     const classes = useStyles();
     // const { userCurrentAddress } = useEthersState();
     // const [balance, setBalance] = React.useState<string | undefined>()
@@ -170,6 +173,7 @@ export const OpthyCard: FC<CardProps> = ({ data, calledFrom, buyableProp, liquid
                     );
                     console.log("Buy Transaction Response = ", txResponse);
                     const txReceipt: TransactionReceipt = await txResponse.wait();
+                    setSwapperBuy(true);
                     swapperFeeAmount = parseEther("0");
                     setSwapperBuyLoading(false);
                     await opthyMutate(opthys, true);
@@ -321,17 +325,25 @@ export const OpthyCard: FC<CardProps> = ({ data, calledFrom, buyableProp, liquid
                             </Link>
                         </Grid>: "" 
                     }
-                    { calledFrom === "buyContract" && Number(formatUnits(swapperFeeAmount, result.swapperDetails.decimals)) > 0 ?
+                    { calledFrom === "buyContract" ? 
+                        swapperBuy || liquidityBuy ?
+                            <>
+                                <Button size="medium" sx={{ m: 1 }} variant="contained" color="primary">Swap</Button>
+                                <Button size="medium" sx={{ m: 1 }} variant="contained" color="primary">Relist</Button>
+                            </>
+                        :
+                        Number(formatUnits(swapperFeeAmount, result.swapperDetails.decimals)) > 0 ?
                         <Grid item>
-                            {swapperBuyLoading ? <Button size="medium" sx={{ m: 1 }} variant="contained" color="primary">Please wait...</Button> : 
+                            {swapperBuyLoading ? <LoadingButton sx={{ m: 1 }} loading variant="outlined"> Submit </LoadingButton> : 
                             <Button onClick={clickBuyContract} size="medium" sx={{ m: 1 }} variant="contained" color="primary">Buy</Button>
                             }
-                        </Grid>: "" 
+                        </Grid> : "" 
+                        : ""
                     }
-                    { calledFrom === "contract" ?<>
+                    {/* { calledFrom === "contract" ?<>
                     <Button size="medium" sx={{ m: 1 }} variant="contained" color="primary">Swap</Button>
                     <Button size="medium" sx={{ m: 1 }} variant="contained" color="primary">Relist</Button></>
-                    : "" }
+                    : "" } */}
                 </Grid>
                 
             </CardActions>

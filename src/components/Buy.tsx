@@ -14,6 +14,7 @@ import {ContractInterface, ethers} from "ethers";
 import { ChainId, ERC20, OpthyABI } from 'opthy-v1-core';
 import useSWR from 'swr';
 import { TransactionReceipt, TransactionResponse } from "@ethersproject/providers";
+import { LoadingButton } from "@mui/lab";
 
 declare let window:any
 const { address, ABI } = ERC20(ChainId.RinkebyTestnet);
@@ -176,11 +177,11 @@ export const Buy: FC<BuyProps> = ({ contractAddress, swapperDetails, liquidityPr
 
                                 {buyable?.status === false ? 
                                     loading === true ? 
-                                    <Button size="medium" sx={{ m: 3 }} variant="contained" color="primary">Please wait...</Button>
+                                    <LoadingButton sx={{ m: 3 }} loading variant="outlined"> Submit </LoadingButton>
                                     : 
                                     <Button onClick={() => clickApprove("swapper")} size="medium" sx={{ m: 3 }} variant="contained" color="primary">Approve {swapperDetails.symbol} to Buy</Button>
                                 :
-                                <Button size="medium" sx={{ m: 3 }} variant="contained" color="primary">Approved </Button>
+                                <Button sx={{ m: 3 }} variant="outlined" disabled> Approved </Button>
                                 }
                                 </>
                             :   <>
@@ -212,11 +213,11 @@ export const Buy: FC<BuyProps> = ({ contractAddress, swapperDetails, liquidityPr
 
                                 {liquidityBuyable?.status === false ? 
                                     liquidityLoading === true ? 
-                                    <Button size="medium" sx={{ m: 3 }} variant="contained" color="primary">Please wait...</Button>
+                                    <LoadingButton sx={{ m: 3 }} loading variant="outlined"> Submit </LoadingButton>
                                     : 
                                     <Button onClick={() => clickApprove("liquidity")} size="medium" sx={{ m: 3 }} variant="contained" color="primary">Approve {liquidityProviderDetails.symbol} to Buy</Button>
                                 :
-                                <Button size="medium" sx={{ m: 3 }} variant="contained" color="primary">Approved </Button>
+                                <Button sx={{ m: 3 }} variant="outlined" disabled> Approved </Button>
                                 }
                                 </>
                             :   <>
