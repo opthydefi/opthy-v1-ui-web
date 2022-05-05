@@ -25,7 +25,7 @@ import { LoadingButton } from "@mui/lab";
 
 declare let window:any
 
-// const { address, ABI } = ERC20(ChainId.RinkebyTestnet);
+const { address, ABI } = ERC20(ChainId.RinkebyTestnet);
 // console.log("ERCMetaData = ", ABI, address);
 const opthyABI = OpthyABI(ChainId.RinkebyTestnet);
 
@@ -62,7 +62,7 @@ interface buyContract {
 
 
 const BuyContract: FC = () => {
-    // const { userCurrentAddress } = useEthersState();
+    const { userCurrentAddress } = useEthersState();
     const classes = useStyles();
     let { ethereum } = window;
     const provider = new ethers.providers.Web3Provider(ethereum);
@@ -194,6 +194,36 @@ const BuyContract: FC = () => {
     // if(allowanceValidating === true){
     //     return <Typography className={classes.loadingClass} gutterBottom variant="h5" component="div">Loading...</Typography>
     // }
+
+    React.useEffect(() => {
+        buyLiquidityProviderCheck();
+        async function buyLiquidityProviderCheck(){
+            console.log("opthyABI = ", opthyABI);
+            const contract = new ethers.Contract(query.get("contractAddress"), opthyABI, signer);
+            const buyLPCheck = await contract.liquidityProvider();
+            if(userCurrentAddress == buyLPCheck){
+                console.log("Liquidity Provider buy true");
+            } else {
+                console.log("Liquidity Provider buy false");
+            }
+            console.log("buy Liquidity Provider check = ", userCurrentAddress + " || " + buyLPCheck);
+        }
+    },[])
+    React.useEffect(() => {
+        buySwapperCheck();
+        async function buySwapperCheck(){
+            const contract = new ethers.Contract(query.get("contractAddress"), opthyABI, signer);
+            const buySwapperChk = await contract.swapper();
+            if(userCurrentAddress == buySwapperChk){
+                console.log("Swapper buy true");
+            } else {
+                console.log("Swapper buy false");
+            }
+            console.log("buy Swapper Provider check = ", userCurrentAddress + " || " + buySwapperChk);
+        }
+    },[])
+
+    
     return (
         <Page title="Buy Contract">
             <Box m={2} mt={10}>
