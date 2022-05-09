@@ -15,7 +15,7 @@ import { formatUnits, parseEther, parseUnits } from '@ethersproject/units';
 import { useERC20Metadata, CURRENCY_CONVERT } from "src/utils/helpers";
 import { useEthersState } from 'src/contexts/EthereumContext';
 import {ethers} from "ethers";
-import { Link } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
 import { ChainId, ERC20, OpthyABI } from 'opthy-v1-core';
 import useSWR from 'swr';
 import { TransactionReceipt, TransactionResponse } from "@ethersproject/providers";
@@ -63,9 +63,10 @@ interface CardProps {
 
 export const OpthyCard: FC<CardProps> = ({ data, calledFrom, buyableProp, liquidityBuy, swapperBuy, setSwapperBuy, opthyMutate, opthys }: CardProps) => {
     const classes = useStyles();
+    const history = useHistory();
     // const { userCurrentAddress } = useEthersState();
     // const [balance, setBalance] = React.useState<string | undefined>()
-    // console.log("calledFrom = ", calledFrom);
+    // console.log("data = ", data);
     const [swapperBuyLoading, setSwapperBuyLoading] = React.useState<boolean>(false);
 
 
@@ -329,13 +330,13 @@ export const OpthyCard: FC<CardProps> = ({ data, calledFrom, buyableProp, liquid
                         swapperBuy || liquidityBuy ?
                             <>
                                 <Button size="medium" sx={{ m: 1 }} variant="contained" color="primary">Swap</Button>
-                                <Button size="medium" sx={{ m: 1 }} variant="contained" color="primary">Relist</Button>
+                                <Button onClick={() => history.push('/')} size="medium" sx={{ m: 1 }} variant="contained" color="primary">Relist</Button>
                             </>
                         :
                         Number(formatUnits(swapperFeeAmount, result.swapperDetails.decimals)) > 0 ?
                         <Grid item>
                             {swapperBuyLoading ? <LoadingButton sx={{ m: 1 }} loading variant="outlined"> Submit </LoadingButton> : 
-                            <Button onClick={clickBuyContract} size="medium" sx={{ m: 1 }} variant="contained" color="primary">Buy</Button>
+                            <Button onClick={clickBuyContract}  size="medium" sx={{ m: 1 }} variant="contained" color="primary">Buy</Button>
                             }
                         </Grid> : "" 
                         : ""

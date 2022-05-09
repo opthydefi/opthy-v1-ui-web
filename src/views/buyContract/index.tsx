@@ -68,39 +68,56 @@ const BuyContract: FC = () => {
     const provider = new ethers.providers.Web3Provider(ethereum);
     const signer = provider.getSigner();
 
+    const query: any = useQuery();
+
+    const { data: opthyExpiration, mutate: expirationMutate, isValidating: expIsValidating } = useSWR([opthyABI, query.get("contractAddress"), "expiration"]);
+
+    const { data: opthyLpFee, mutate: lpFeeMutate, isValidating: lpFeeIsValidating } = useSWR([opthyABI, query.get("contractAddress"), "getLiquidityProviderFee"]);
+
+
+    const { data: opthySwapFee, mutate: swapFeeMutate, isValidating: swapFeeIsValidating } = useSWR([opthyABI, query.get("contractAddress"), "getSwapperFee"]);
+
+    const { data: opthyRT0, mutate: rT0Mutate, isValidating: rT0IsValidating } = useSWR([opthyABI, query.get("contractAddress"), "rT0"]);
+
+    const { data: opthyRT1, mutate: rT1Mutate, isValidating: rT1IsValidating } = useSWR([opthyABI, query.get("contractAddress"), "rT1"]);
+
+    const { data: opthyToken0, mutate: token0Mutate, isValidating: token0IsValidating } = useSWR([opthyABI, query.get("contractAddress"), "token0"]);
+
+    const { data: opthyToken1, mutate: token1Mutate, isValidating: token1IsValidating } = useSWR([opthyABI, query.get("contractAddress"), "token1"]);
+
     const [liquidityBuyLoading, setLiquidityBuyLoading] = React.useState<boolean>(false);
     const [buyable, setBuyable] = React.useState<buyContract>({status: false, message: "Please approve before Buy."})
     const [liquidityBuyable, setLiquidityBuyable] = React.useState<buyContract>({status: false, message: "Please approve before Buy."})
     const [liquidityBuy, setLiquidityBuy] = React.useState<boolean>(false);
-    const [swapperBuy, setSwapperBuy] = React.useState<boolean>(false);
+    const [swapperBuy, setSwapperBuy] = React.useState<boolean>(true);
     const [transactionLog, setTransactionLog] = React.useState<Array<{}>>([]);
 
     function useQuery() {
         return new URLSearchParams(useLocation().search);
     }
-    const query: any = useQuery();
-    const opthyData: any = JSON.parse(query.get("opthyDetails"));
-    // console.log("opthyData = ", opthyData);
+    
+    let opthyData: any = JSON.parse(query.get("opthyDetails"));
+
     const opthyDetails: {} = {
         balanceT0: query.get("balanceT0"),
         balanceT1: query.get("balanceT1"),
-        expiration: query.get("expiration"),
-        liquidityProvider: opthyData.liquidityProviderDetails.address,
-        liquidityProviderFeeAmount: opthyData.liquidityProviderDetails.feeAmount,
-        liquidityProviderFeeToken: opthyData.liquidityProviderDetails.token,
+        expiration: opthyExpiration,
+        liquidityProvider: userCurrentAddress,
+        liquidityProviderFeeAmount: !lpFeeIsValidating ? opthyLpFee?.feeAmount_ : 0,
+        liquidityProviderFeeToken: !lpFeeIsValidating ? opthyLpFee?.feeToken_ : opthyData.liquidityProviderDetails.token,
         opthy: query.get("contractAddress"),
-        rT0: query.get("rT0"),
-        rT1: query.get("rT1"),
-        swapper: opthyData.swapperDetails.address,
-        swapperFeeAmount: opthyData.swapperDetails.feeAmount,
-        swapperFeeToken: opthyData.swapperDetails.token,
-        token0: opthyData.token0.address,
-        token1: opthyData.token1.address
+        rT0: opthyRT0,
+        rT1: opthyRT1,
+        swapper: userCurrentAddress,
+        swapperFeeAmount: !swapFeeIsValidating ? opthySwapFee?.feeAmount_ : 0,
+        swapperFeeToken: !swapFeeIsValidating ? opthySwapFee?.feeToken_ : opthyData.swapperDetails.token,
+        token0: !token0IsValidating ? opthyToken0 : '',
+        token1: !token1IsValidating ? opthyToken1 : '',
     };
-    
+    console.log("opthyDetails = ", swapFeeIsValidating, opthySwapFee);
     // Expire Calculation
     const now = Math.floor(Date.now() / 1000);
-    const expire = parseInt(query.get("expiration"));
+    const expire = parseInt(opthyExpiration);
     let delta = expire - now;
     const days = Math.floor(delta / 86400);
     delta -= days * 86400;
@@ -118,6 +135,8 @@ const BuyContract: FC = () => {
         return Number(n) === n && n % 1 !== 0;
     }
 
+    console.log("opthyData = ",opthyData);
+
     const clickLiquidityBuyContract = async (): Promise<void> => {
         if(liquidityBuyable?.status === true){
             const liquidityAmount = formatUnits(opthyData.liquidityProviderDetails.feeAmount, opthyData.liquidityProviderDetails.decimals);
@@ -132,6 +151,9 @@ const BuyContract: FC = () => {
                     );
                     console.log("Buy Liquidity Transaction Response = ", txResponse);
                     const txReceipt: TransactionReceipt = await txResponse.wait();
+                    await expirationMutate(opthyExpiration,true);
+                    await swapFeeMutate(opthySwapFee,true);
+                    await lpFeeMutate(opthyLpFee,true);
                     setLiquidityBuyLoading(false);
                     setLiquidityBuy(true);
                     // await opthyMutate(opthys, true);
@@ -173,6 +195,21 @@ const BuyContract: FC = () => {
         }
     }, [swapperBuy, liquidityBuy]);
 
+    React.useEffect(() => {
+        // mutate();
+        async function mutate(){
+            try {
+                await expirationMutate(opthyExpiration,true);
+                await swapFeeMutate(opthySwapFee,true);
+                await lpFeeMutate(opthyLpFee,true);
+            } catch (error) {
+                console.log(error);
+            }
+        }
+    }, [swapperBuy, liquidityBuy]);
+
+    
+
     // Event Call
     // React.useEffect(() => {
     //     if(!ethereum) return
@@ -198,31 +235,36 @@ const BuyContract: FC = () => {
     React.useEffect(() => {
         buyLiquidityProviderCheck();
         async function buyLiquidityProviderCheck(){
-            console.log("opthyABI = ", opthyABI);
             const contract = new ethers.Contract(query.get("contractAddress"), opthyABI, signer);
-            const buyLPCheck = await contract.liquidityProvider();
-            if(userCurrentAddress == buyLPCheck){
-                console.log("Liquidity Provider buy true");
-            } else {
-                console.log("Liquidity Provider buy false");
-            }
-            console.log("buy Liquidity Provider check = ", userCurrentAddress + " || " + buyLPCheck);
-        }
-    },[])
-    React.useEffect(() => {
-        buySwapperCheck();
-        async function buySwapperCheck(){
-            const contract = new ethers.Contract(query.get("contractAddress"), opthyABI, signer);
-            const buySwapperChk = await contract.swapper();
-            if(userCurrentAddress == buySwapperChk){
-                console.log("Swapper buy true");
-            } else {
-                console.log("Swapper buy false");
-            }
-            console.log("buy Swapper Provider check = ", userCurrentAddress + " || " + buySwapperChk);
+            console.log("opthyABI contract = ", contract, opthyABI);
+            // const buyLPCheck = await contract.liquidityProvider();
+            // if(userCurrentAddress == buyLPCheck){
+            //     console.log("Liquidity Provider buy true");
+            // } else {
+            //     console.log("Liquidity Provider buy false");
+            // }
+            // console.log("buy Liquidity Provider check = ", userCurrentAddress + " || " + buyLPCheck);
         }
     },[])
 
+    // React.useEffect(() => {
+    //     buySwapperCheck();
+    //     async function buySwapperCheck(){
+    //         const contract = new ethers.Contract(query.get("contractAddress"), opthyABI, signer);
+    //         const buySwapperChk = await contract.swapper();
+    //         if(userCurrentAddress == buySwapperChk){
+    //             console.log("Swapper buy true");
+    //         } else {
+    //             console.log("Swapper buy false");
+    //         }
+    //         console.log("buy Swapper Provider check = ", userCurrentAddress + " || " + buySwapperChk);
+    //     }
+    // },[])
+    
+    
+    if((expIsValidating === true) || (lpFeeIsValidating === true) || (swapFeeIsValidating === true) || (rT0IsValidating === true) || (rT1IsValidating === true)){
+        return <Typography className={classes.loadingClass} gutterBottom variant="h5" component="div">Loading...</Typography>
+    } else {
     
     return (
         <Page title="Buy Contract">
@@ -267,15 +309,15 @@ const BuyContract: FC = () => {
                             <CardContent>
                                 <Typography align="center" variant="h5">Providing Liquidity</Typography>
                                 <Divider />
-                                <Typography align="center" variant="h5">BTC/DAI</Typography>
+                                <Typography align="center" variant="h5">{opthyData.token1.symbol}/{opthyData.token0.symbol}</Typography>
                                 
                                 <Grid container spacing={2} mt={0}>
                                     <Grid item xs={12}>
                                         <Paper elevation={0} className={classes.paperTransparent}>
                                             <Typography variant="body2" color="text.secondary">Value at Maturity, minimum * between: </Typography>
                                             <Box p={1}>
-                                                <Typography gutterBottom variant="body2">{Number(formatUnits(query.get("rT0"), opthyData.token0.decimals))} {opthyData.token0.symbol}</Typography>
-                                                <Typography gutterBottom variant="body2">{ parseFloat(formatUnits(query.get("rT1"), opthyData.token1.decimals)).toFixed(isFloat(Number(formatUnits(query.get("rT1"), opthyData.token1.decimals))) === true ? 4 : 2) } {opthyData.token1.symbol}</Typography>
+                                                <Typography gutterBottom variant="body2">{Number(formatUnits(opthyRT0, opthyData.token0.decimals))} {opthyData.token0.symbol}</Typography>
+                                                <Typography gutterBottom variant="body2">{ parseFloat(formatUnits(opthyRT1, opthyData.token1.decimals)).toFixed(isFloat(Number(formatUnits(opthyRT1, opthyData.token1.decimals))) === true ? 4 : 2) } {opthyData.token1.symbol}</Typography>
                                             </Box>
                                         </Paper>
                                     </Grid>
@@ -291,7 +333,7 @@ const BuyContract: FC = () => {
                                     </Grid>
                                 </Grid>
                             </CardContent>
-                            { Number(formatUnits(opthyData.liquidityProviderDetails.feeAmount, opthyData.liquidityProviderDetails.decimals)) > 0 ?
+                            { Number(formatUnits(opthyLpFee.feeAmount_, opthyData.liquidityProviderDetails.decimals)) > 0 ?
                             <CardActions>
                                 <Grid container spacing={2} mt={0} justifyContent="center">
                                     <Grid item>
@@ -354,6 +396,7 @@ const BuyContract: FC = () => {
             </Box>
         </Page>
     )
+    }
 }
 
 export default BuyContract;

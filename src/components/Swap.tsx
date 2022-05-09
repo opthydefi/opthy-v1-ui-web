@@ -222,13 +222,13 @@ export const Swap: FC<SwapProps> = ({ data }: SwapProps) => {
             </Grid>
             
         </Box>
-        {/* <Box m={2} mt={-1}>
+        <Box m={2} mt={-1}>
             <Grid container justifyContent="center">
                 <Grid item>
-                    <Button size="medium" variant="contained" color="primary">Approve DAI to Buy</Button>
+                    <Button size="medium" variant="contained" color="primary">Approve {dai === "" ? data.token0.symbol : dai} to Swap</Button>
                 </Grid>
             </Grid>
-        </Box> */}
+        </Box>
         </>
     )
 }
