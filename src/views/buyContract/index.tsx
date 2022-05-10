@@ -89,7 +89,7 @@ const BuyContract: FC = () => {
     const [buyable, setBuyable] = React.useState<buyContract>({status: false, message: "Please approve before Buy."})
     const [liquidityBuyable, setLiquidityBuyable] = React.useState<buyContract>({status: false, message: "Please approve before Buy."})
     const [liquidityBuy, setLiquidityBuy] = React.useState<boolean>(false);
-    const [swapperBuy, setSwapperBuy] = React.useState<boolean>(true);
+    const [swapperBuy, setSwapperBuy] = React.useState<boolean>(false);
     const [transactionLog, setTransactionLog] = React.useState<Array<{}>>([]);
 
     function useQuery() {
