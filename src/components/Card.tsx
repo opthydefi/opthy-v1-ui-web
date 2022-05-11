@@ -57,11 +57,9 @@ interface CardProps {
     liquidityBuy?: boolean;
     swapperBuy?: boolean;
     setSwapperBuy?: any;
-    opthyMutate?: any;
-    opthys?: any
 }
 
-export const OpthyCard: FC<CardProps> = ({ data, calledFrom, buyableProp, liquidityBuy, swapperBuy, setSwapperBuy, opthyMutate, opthys }: CardProps) => {
+export const OpthyCard: FC<CardProps> = ({ data, calledFrom, buyableProp, liquidityBuy, swapperBuy, setSwapperBuy }: CardProps) => {
     const classes = useStyles();
     const history = useHistory();
     const { setViewContract, userCurrentAddress, viewContractAddress } = useEthersState();
@@ -179,7 +177,7 @@ export const OpthyCard: FC<CardProps> = ({ data, calledFrom, buyableProp, liquid
                     setSwapperBuy(true);
                     swapperFeeAmount = parseEther("0");
                     setSwapperBuyLoading(false);
-                    await opthyMutate(opthys, true);
+                    // await opthyMutate(opthys, true);
                     console.log("txReceipt = ", txReceipt)
                     console.log("txReceipt log = ", txReceipt.logs[0])
                 } catch (error: any) {

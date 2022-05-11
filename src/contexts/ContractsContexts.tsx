@@ -153,10 +153,10 @@ export const ContractsProvider: FC<ContractsProviderProps> = ({ children }) => {
     return (
         <SWRConfig
             value={{
-                refreshInterval: 0,
+                revalidateOnFocus: false,
+                // refreshInterval: 0,
                 fetcher: fetcher()
             }}
-        // value={{ fetcher: fetcher }}
         >
             <ContractsContext.Provider
                 value={{
