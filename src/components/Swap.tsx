@@ -9,7 +9,7 @@ import type { Theme } from 'src/types/theme';
 import makeStyles from '@mui/styles/makeStyles';
 import { useEthersState } from 'src/contexts/EthereumContext';
 import {ContractInterface, ethers} from "ethers";
-import { CURRENCY_CONVERT } from "src/utils/helpers";
+import { useERC20Metadata, CURRENCY_CONVERT } from "src/utils/helpers";
 import { formatUnits, parseEther, parseUnits } from '@ethersproject/units';
 
 declare let window:any
@@ -59,6 +59,9 @@ export const Swap: FC<SwapProps> = ({ data }: SwapProps) => {
     const provider = new ethers.providers.Web3Provider(ethereum);
     const signer = provider.getSigner();
 
+    const token_0 = useERC20Metadata(data.token0);
+    const token_1 = useERC20Metadata(data.token1);
+
     const [dai, setDai] = React.useState<string>('');
     const [dai2, setDai2] = React.useState<string>('');
     const [open, setOpen] = React.useState<boolean>(false);
@@ -67,7 +70,7 @@ export const Swap: FC<SwapProps> = ({ data }: SwapProps) => {
 
     const handleChange = (event: { target: { value: React.SetStateAction<string> } }) => {
         setDai(event.target.value);
-        setDai2(((event.target.value === data.token0.symbol) ? data.token1.symbol: data.token0.symbol));
+        setDai2(((event.target.value === token_0.symbol) ? token_1.symbol: token_0.symbol));
     };
 
     const handleClose = () => {
@@ -80,7 +83,7 @@ export const Swap: FC<SwapProps> = ({ data }: SwapProps) => {
 
     const handleChange2 = (event: { target: { value: React.SetStateAction<string> } }) => {
         setDai2(event.target.value);
-        setDai(((event.target.value === data.token0.symbol) ? data.token1.symbol: data.token0.symbol));
+        setDai(((event.target.value === token_0.symbol) ? token_1.symbol: token_0.symbol));
     };
 
     const handleClose2 = () => {
@@ -91,8 +94,8 @@ export const Swap: FC<SwapProps> = ({ data }: SwapProps) => {
         setOpen2(true);
     };
 
-    const convertToken0Cur = CURRENCY_CONVERT(data.token0.symbol);
-    const convertToken1Cur = CURRENCY_CONVERT(data.token1.symbol);
+    const convertToken0Cur = CURRENCY_CONVERT(token_0.symbol);
+    const convertToken1Cur = CURRENCY_CONVERT(token_1.symbol);
     provider.getBalance(userCurrentAddress)
     .then((result)=> {
         setUserBalance(ethers.utils.formatEther(result))
@@ -118,7 +121,7 @@ export const Swap: FC<SwapProps> = ({ data }: SwapProps) => {
                                 </Grid>
                                 <Grid item xs={12}>
                                     <FormControl sx={{ m: 1, width: 350 }}>
-                                        <InputLabel id="demo-controlled-open-select-label">{data.token0.symbol}</InputLabel>
+                                        <InputLabel id="demo-controlled-open-select-label">{token_0.symbol}</InputLabel>
                                         <Select
                                         labelId="demo-controlled-open-select-label"
                                         id="demo-controlled-open-select"
@@ -132,8 +135,8 @@ export const Swap: FC<SwapProps> = ({ data }: SwapProps) => {
                                             <MenuItem value="">
                                                 <em>Choose From</em>
                                             </MenuItem>
-                                            <MenuItem value={data.token0.symbol}>{data.token0.symbol}</MenuItem>
-                                            <MenuItem value={data.token1.symbol}>{data.token1.symbol}</MenuItem>
+                                            <MenuItem value={token_0.symbol}>{token_0.symbol}</MenuItem>
+                                            <MenuItem value={token_1.symbol}>{token_1.symbol}</MenuItem>
                                         </Select>
                                     </FormControl>
                                 </Grid>
@@ -180,10 +183,10 @@ export const Swap: FC<SwapProps> = ({ data }: SwapProps) => {
                                 <Grid item xs={12}>
                                     <Box>
                                         <Typography m={1} sx={{display: 'inline-block'}}>Quantity: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</Typography>
-                                        <Typography sx={{display: 'inline-block'}} gutterBottom variant="body2">~ ${((dai2 === data.token0.symbol) ? convertToken0Cur?.currencyIsValidating ? 0 : (Number(formatUnits(data.token0.balance, data.token0.decimals)) * convertToken0Cur?.convertResult?.Price).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,'): convertToken1Cur?.currencyIsValidating ? 0 : (Number(formatUnits(data.token1.balance, data.token1.decimals)) * convertToken1Cur?.convertResult?.Price).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,'))} USD</Typography>
+                                        <Typography sx={{display: 'inline-block'}} gutterBottom variant="body2">~ ${((dai2 === token_0.symbol) ? convertToken0Cur?.currencyIsValidating ? 0 : (Number(formatUnits(data.balanceT0, token_0.decimals)) * convertToken0Cur?.convertResult?.Price).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,'): convertToken1Cur?.currencyIsValidating ? 0 : (Number(formatUnits(data.balanceT1, token_1.decimals)) * convertToken1Cur?.convertResult?.Price).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,'))} USD</Typography>
                                     </Box>
                                     <FormControl sx={{ m: 1, width: 350 }}>
-                                        <InputLabel id="demo-controlled-open-select-label2">{data.token1.symbol}</InputLabel>
+                                        <InputLabel id="demo-controlled-open-select-label2">{token_1.symbol}</InputLabel>
                                         <Select
                                             labelId="demo-controlled-open-select-label2"
                                             id="demo-controlled-open-select2"
@@ -197,8 +200,8 @@ export const Swap: FC<SwapProps> = ({ data }: SwapProps) => {
                                             <MenuItem value="">
                                                 <em>Choose To</em>
                                             </MenuItem>
-                                            <MenuItem value={data.token0.symbol}>{data.token0.symbol}</MenuItem>
-                                            <MenuItem value={data.token1.symbol}>{data.token1.symbol}</MenuItem>
+                                            <MenuItem value={token_0.symbol}>{token_0.symbol}</MenuItem>
+                                            <MenuItem value={token_1.symbol}>{token_1.symbol}</MenuItem>
                                         </Select>
                                     </FormControl>
                                 </Grid>
@@ -225,7 +228,7 @@ export const Swap: FC<SwapProps> = ({ data }: SwapProps) => {
         <Box m={2} mt={-1}>
             <Grid container justifyContent="center">
                 <Grid item>
-                    <Button size="medium" variant="contained" color="primary">Approve {dai === "" ? data.token0.symbol : dai} to Swap</Button>
+                    <Button size="medium" variant="contained" color="primary">Approve {dai === "" ? token_0.symbol : dai} to Swap</Button>
                 </Grid>
             </Grid>
         </Box>

@@ -27,9 +27,10 @@ const useStyles = makeStyles((theme: Theme) => ({
 declare const window: any;
 
 const Home: FC = () => {
-    const { userCurrentAddress, connectWallet } = useEthersState();
+    const { connectWallet, setAllOpthy, userCurrentAddress, allOpthy } = useEthersState();
     const classes = useStyles();
     let { ethereum } = window;
+    
     // console.log("userCurrentAddress = ",isMetamaskInstall, userCurrentAddress);
     const provider = new ethers.providers.Web3Provider(ethereum);
     const signer = provider.getSigner();
@@ -43,8 +44,11 @@ const Home: FC = () => {
     let MyOpthys = OpthyABI(ChainId.RinkebyTestnet);
     // console.log("MyOpthys = ", MyOpthys);
 
+    // const { data: opthys, mutate: opthyMutate, isValidating } = useSWR(!allOpthy ? [AllOpthys.ABI, AllOpthys.address, "all"]: null);
     const { data: opthys, mutate: opthyMutate, isValidating } = useSWR([AllOpthys.ABI, AllOpthys.address, "all"]);
-    // console.log(opthys, isValidating, 'isValidating');
+
+    // console.log( isValidating, 'isValidating');
+    // console.log("all opthy = ", allOpthy);
 
     const createOpthy = async (): Promise<void> => {
         let date = new Date();
@@ -75,16 +79,21 @@ const Home: FC = () => {
         console.log("txReceipt = ", txReceipt)
         console.log("txReceipt log = ", txReceipt.logs[0])
     }
-    React.useEffect(() => {
-        // setLiquidityProviderFee();
-        // createOpthy()
-        // opthyMutate(opthys, true);
-        // opthyMutate(sendData, true);
-    }, []);
+    // React.useEffect(() => {
+    //     // console.log("allOpthy = ", allOpthy);
+    //     // setLiquidityProviderFee();
+    //     // createOpthy()
+    //     // opthyMutate(opthys, true);
+    //     // opthyMutate(sendData, true);
+    // }, []);
 
-    if(isValidating === true){
-        return <Typography className={classes.loadingClass} gutterBottom variant="h5" component="div">Loading...</Typography>
-    }
+    React.useEffect(() => {
+        setAllOpthy(opthys);
+    }, [!isValidating]);
+
+    // if(isValidating === true){
+    //     return <Typography className={classes.loadingClass} gutterBottom variant="h5" component="div">Loading...</Typography>
+    // }
     return (
         <Page title="Home page">
             <Container className={classes.customContainer}>

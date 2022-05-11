@@ -18,15 +18,16 @@ interface AppInitializeState {
     userTransactions: any[];
     isWalletConnected: boolean;
     provider: any;
+    viewContractAddress: string;
+    allOpthy: any;
 }
 
 interface EthereumContextValue extends AppInitializeState {
 
     connectWallet: (user: any) => Promise<void>;
+    setViewContract: (address: string) => Promise<void>;
+    setAllOpthy: (data: any) => Promise<void>;
 }
-
-
-
 
 const initialAppState: AppInitializeState = {
     isMetamaskInstall: null,
@@ -36,12 +37,16 @@ const initialAppState: AppInitializeState = {
     userTransactions: [],
     isWalletConnected: false,
     provider: null,
+    viewContractAddress: '',
+    allOpthy: null,
 };
 
 
 const EthereumContext = React.createContext<EthereumContextValue>({
     ...initialAppState,
     connectWallet: () => Promise.resolve(),
+    setViewContract: () => Promise.resolve(),
+    setAllOpthy: () => Promise.resolve(),
     // test: () => Promise.resolve(),
 });
 
@@ -85,7 +90,21 @@ type checkIsMetamaskInstall = {
     }
 }
 
-type Action = InitializeAction | ChangeMetamaskAddress | checkIsMetamaskInstall | ConnectWallet | InitializeProvider;
+type SetViewContractAddress = {
+    type: "SET_VIEW_CONTRACT",
+    payload: {
+        address: string;
+    }
+}
+
+type SetAllOpthy = {
+    type: "SET_ALL_OPTHY",
+    payload: {
+        data: any;
+    }
+}
+
+type Action = InitializeAction | ChangeMetamaskAddress | checkIsMetamaskInstall | ConnectWallet | InitializeProvider | SetViewContractAddress | SetAllOpthy;
 
 const stateReducer = (state: AppInitializeState, action: Action): AppInitializeState => {
     switch (action.type) {
@@ -116,6 +135,20 @@ const stateReducer = (state: AppInitializeState, action: Action): AppInitializeS
             return {
                 ...state,
                 provider: provider
+            }
+        }
+        case "SET_VIEW_CONTRACT": {
+            const { address } = action.payload;
+            return {
+                ...state,
+                viewContractAddress: address
+            }
+        }
+        case "SET_ALL_OPTHY": {
+            const { data } = action.payload;
+            return {
+                ...state,
+                allOpthy: data
             }
         }
         default: {
@@ -220,7 +253,23 @@ export const EthereumProvider: FC<EthereumProviderProps> = ({ children }) => {
 
 
 
+    const setViewContract = async (address: string) => {
+        dispatch({
+            type: "SET_VIEW_CONTRACT",
+            payload: {
+                address: address
+            }
+        })
+    }
 
+    const setAllOpthy = async (data: any) => {
+        dispatch({
+            type: "SET_ALL_OPTHY",
+            payload: {
+                data: data
+            }
+        })
+    }
 
 
 
@@ -260,7 +309,9 @@ export const EthereumProvider: FC<EthereumProviderProps> = ({ children }) => {
     return (<EthereumContext.Provider
         value={{
             ...state,
-            connectWallet
+            connectWallet,
+            setViewContract,
+            setAllOpthy,
         }}>
         {children}
     </EthereumContext.Provider>)

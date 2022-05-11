@@ -64,7 +64,8 @@ interface CardProps {
 export const OpthyCard: FC<CardProps> = ({ data, calledFrom, buyableProp, liquidityBuy, swapperBuy, setSwapperBuy, opthyMutate, opthys }: CardProps) => {
     const classes = useStyles();
     const history = useHistory();
-    // const { userCurrentAddress } = useEthersState();
+    const { setViewContract, userCurrentAddress, viewContractAddress } = useEthersState();
+    // console.log("viewContractAddress = ", viewContractAddress);
     // const [balance, setBalance] = React.useState<string | undefined>()
     // console.log("data = ", data);
     const [swapperBuyLoading, setSwapperBuyLoading] = React.useState<boolean>(false);
@@ -72,6 +73,7 @@ export const OpthyCard: FC<CardProps> = ({ data, calledFrom, buyableProp, liquid
 
     let opthyABI = OpthyABI(ChainId.RinkebyTestnet);
     // console.log("MyOpthys = ", MyOpthys);
+    
 
 
     let result: any = {}
@@ -320,8 +322,8 @@ export const OpthyCard: FC<CardProps> = ({ data, calledFrom, buyableProp, liquid
             <CardActions>
                 <Grid container spacing={2} mt={0} justifyContent="center">
                     { calledFrom === "home" ?
-                        <Grid item>
-                            <Link to={"buy-contract?contractAddress=" + result.address + "&expiration=" + expiration + "&balanceT0=" + balanceT0 + "&balanceT1=" + balanceT1 + "&rT0=" + rT0 + "&rT1=" + rT1 + "&opthyDetails=" + JSON.stringify(result) }>
+                        <Grid item onClick={() => setViewContract(result.address)}>
+                            <Link to={"buy-contract"}>
                                 <Button size="medium" sx={{ m: 1 }} variant="contained" color="primary">View Offer</Button>
                             </Link>
                         </Grid>: "" 
