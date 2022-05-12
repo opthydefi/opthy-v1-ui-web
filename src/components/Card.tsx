@@ -321,7 +321,7 @@ export const OpthyCard: FC<CardProps> = ({ data, calledFrom, buyableProp, liquid
                 <Grid container spacing={2} mt={0} justifyContent="center">
                     { calledFrom === "home" ?
                         <Grid item onClick={() => setViewContract(result.address)}>
-                            <Link to={"buy-contract"}>
+                            <Link to={"buy-contract/" + result.address }>
                                 <Button size="medium" sx={{ m: 1 }} variant="contained" color="primary">View Offer</Button>
                             </Link>
                         </Grid>: "" 

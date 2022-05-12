@@ -93,7 +93,7 @@ const routes: Routes = [
             },
             {
                 exact: true,
-                path: '/buy-contract',
+                path: '/buy-contract/:address',
                 component: lazy(() => import('src/views/buyContract'))
             },
             {

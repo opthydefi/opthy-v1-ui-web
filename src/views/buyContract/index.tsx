@@ -24,7 +24,7 @@ import moment from 'moment';
 import { LoadingButton } from "@mui/lab";
 // import { useERC20Metadata, CURRENCY_CONVERT } from "src/utils/helpers";
 import useSingleOpthy from "src/hooks/useSingleOpthy";
-// import useTransactions from "src/hooks/useTransactions";
+import useTransactions from "src/hooks/useTransactions";
 
 declare let window:any
 
@@ -64,11 +64,11 @@ interface buyContract {
 }
 
 
-const BuyContract: FC = () => {
-    const { viewContractAddress } = useEthersState();
+const BuyContract: FC = (props: any) => {
+    const viewContractAddress = props.match.params.address;
+    // const { viewContractAddress } = useEthersState();
     const classes = useStyles();
     let { ethereum } = window;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     const provider = new ethers.providers.Web3Provider(ethereum);
     const signer = provider.getSigner();
 
@@ -77,10 +77,10 @@ const BuyContract: FC = () => {
     const [liquidityBuyable, setLiquidityBuyable] = React.useState<buyContract>({status: false, message: "Please approve before Buy."})
     const [liquidityBuy, setLiquidityBuy] = React.useState<boolean>(false);
     const [swapperBuy, setSwapperBuy] = React.useState<boolean>(false);
-    const [transactionLog, setTransactionLog] = React.useState<Array<{}>>([]);
+    // const [transactionLog, setTransactionLog] = React.useState<Array<{}>>([]);
 
-    const { singleOpthy, isValidating } = useSingleOpthy();
-    // const transactionLogs = useTransactions();
+    const { singleOpthy, isValidating } = useSingleOpthy(viewContractAddress);
+    const transactionLog = useTransactions(viewContractAddress);
     // console.log("singleOpthy = ", singleOpthy);
 
     // function isInt(n: number){
@@ -123,29 +123,29 @@ const BuyContract: FC = () => {
         }
     }
 
-    React.useEffect(() => {
-        getPastEvents();
-        async function getPastEvents(){
-            try {
-                const logs = await provider.getLogs({
-                    fromBlock: 0,
-                    toBlock: "latest",
-                    address: viewContractAddress,
-                    // topics: [null],
-                });
-                const newLogs = logs.map(async function(log) {
-                    const logData = await provider.getTransactionReceipt(log.transactionHash);
-                    logData['timestamp'] = (await provider.getBlock(logData.blockNumber)).timestamp;
-                    return logData;
-                })
-                const getAllLogs = await Promise.all(newLogs);
-                // console.log("getAllLogs = ", getAllLogs);
-                setTransactionLog(getAllLogs)
-            } catch (error) {
-                console.log(error);
-            }
-        }
-    }, [swapperBuy, liquidityBuy, provider, viewContractAddress]);
+    // React.useEffect(() => {
+    //     getPastEvents();
+    //     async function getPastEvents(){
+    //         try {
+    //             const logs = await provider.getLogs({
+    //                 fromBlock: 0,
+    //                 toBlock: "latest",
+    //                 address: viewContractAddress,
+    //                 // topics: [null],
+    //             });
+    //             const newLogs = logs.map(async function(log) {
+    //                 const logData = await provider.getTransactionReceipt(log.transactionHash);
+    //                 logData['timestamp'] = (await provider.getBlock(logData.blockNumber)).timestamp;
+    //                 return logData;
+    //             })
+    //             const getAllLogs = await Promise.all(newLogs);
+    //             // console.log("getAllLogs = ", getAllLogs);
+    //             setTransactionLog(getAllLogs)
+    //         } catch (error) {
+    //             console.log(error);
+    //         }
+    //     }
+    // }, [swapperBuy, liquidityBuy]);
 
     // Event Call
     // React.useEffect(() => {

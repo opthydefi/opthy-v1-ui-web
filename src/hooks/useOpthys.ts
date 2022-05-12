@@ -6,7 +6,6 @@ export default function useOpthys() {
 
     const {ABI, address} = OpthysView(ChainId.RinkebyTestnet);
 
-    // eslint-disable-next-line react-hooks/rules-of-hooks
     const { data: opthys, mutate, isValidating } = useSWR([ABI, address, 'all']);
 
     useKeepSWRDataLiveAsBlockArrive(mutate);
