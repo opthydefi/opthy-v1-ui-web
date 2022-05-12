@@ -19,14 +19,12 @@ interface AppInitializeState {
     isWalletConnected: boolean;
     provider: any;
     viewContractAddress: string;
-    allOpthy: any;
 }
 
 interface EthereumContextValue extends AppInitializeState {
 
     connectWallet: (user: any) => Promise<void>;
     setViewContract: (address: string) => Promise<void>;
-    setAllOpthy: (data: any) => Promise<void>;
 }
 
 const initialAppState: AppInitializeState = {
@@ -38,7 +36,6 @@ const initialAppState: AppInitializeState = {
     isWalletConnected: false,
     provider: null,
     viewContractAddress: '',
-    allOpthy: null,
 };
 
 
@@ -46,7 +43,6 @@ const EthereumContext = React.createContext<EthereumContextValue>({
     ...initialAppState,
     connectWallet: () => Promise.resolve(),
     setViewContract: () => Promise.resolve(),
-    setAllOpthy: () => Promise.resolve(),
     // test: () => Promise.resolve(),
 });
 
@@ -97,14 +93,7 @@ type SetViewContractAddress = {
     }
 }
 
-type SetAllOpthy = {
-    type: "SET_ALL_OPTHY",
-    payload: {
-        data: any;
-    }
-}
-
-type Action = InitializeAction | ChangeMetamaskAddress | checkIsMetamaskInstall | ConnectWallet | InitializeProvider | SetViewContractAddress | SetAllOpthy;
+type Action = InitializeAction | ChangeMetamaskAddress | checkIsMetamaskInstall | ConnectWallet | InitializeProvider | SetViewContractAddress;
 
 const stateReducer = (state: AppInitializeState, action: Action): AppInitializeState => {
     switch (action.type) {
@@ -142,13 +131,6 @@ const stateReducer = (state: AppInitializeState, action: Action): AppInitializeS
             return {
                 ...state,
                 viewContractAddress: address
-            }
-        }
-        case "SET_ALL_OPTHY": {
-            const { data } = action.payload;
-            return {
-                ...state,
-                allOpthy: data
             }
         }
         default: {
@@ -262,15 +244,6 @@ export const EthereumProvider: FC<EthereumProviderProps> = ({ children }) => {
         })
     }
 
-    const setAllOpthy = async (data: any) => {
-        dispatch({
-            type: "SET_ALL_OPTHY",
-            payload: {
-                data: data
-            }
-        })
-    }
-
 
 
     const connectWallet = async () => {
@@ -311,7 +284,6 @@ export const EthereumProvider: FC<EthereumProviderProps> = ({ children }) => {
             ...state,
             connectWallet,
             setViewContract,
-            setAllOpthy,
         }}>
         {children}
     </EthereumContext.Provider>)

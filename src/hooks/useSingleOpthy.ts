@@ -1,17 +1,33 @@
-import useSWR from "swr";
-import { ChainId, OpthysView } from 'opthy-v1-core';
+/* eslint-disable react-hooks/rules-of-hooks */
 import useOpthys from './useOpthys';
+import { useERC20Metadata } from "src/utils/helpers";
+import { useEthersState } from 'src/contexts/EthereumContext';
+import useKeepSWRDataLiveAsBlockArrive from './useKeepSWRDataLiveAsBlocksArrive';
 
 export default function useSingleOpthy() {
+    const { viewContractAddress } = useEthersState();
+    const { opthys, mutate, isValidating } = useOpthys();
+    const singleOpthy = opthys.filter((singleOpthy: { [x: string]: any; }) => singleOpthy.opthy === viewContractAddress);
+    singleOpthy['token0Details'] = useERC20Metadata(singleOpthy[0].token0);
+    singleOpthy['token1Details'] = useERC20Metadata(singleOpthy[0].token1);
+    singleOpthy['swapperTokenDetails'] = useERC20Metadata(singleOpthy[0].swapperFeeToken);
+    singleOpthy['liquidityProviderTokenDetails'] = useERC20Metadata(singleOpthy[0].liquidityProviderFeeToken);
 
-    const { opthys, isValidating } = useOpthys();
+    // Expire Calculation
+    const now = Math.floor(Date.now() / 1000);
+    const expire = parseInt(singleOpthy[0].expiration);
+    let delta = expire - now;
+    const days = Math.floor(delta / 86400);
+    delta -= days * 86400;
+    const hours = Math.floor(delta / 3600) % 24;
+    delta -= hours * 3600;
+    const minutes = Math.floor(delta / 60) % 60;
+    delta -= minutes * 60;
+    const seconds = delta % 60;
+    singleOpthy['opthyExpiration'] = days +' days ' + hours + 'h. ' + minutes + 'm. ' + seconds + 's.';
+
+    useKeepSWRDataLiveAsBlockArrive(mutate);
+
+    return { singleOpthy, isValidating };
     
-    // const {ABI, address} = OpthysView(ChainId.RinkebyTestnet);
-
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    // const { data: opthys, mutate, isValidating } = useSWR([ABI, address, 'all']);
-
-    // useKeepSWRDataLiveAsBlockArrive(mutate);
-    
-    return { opthys, isValidating };
 }

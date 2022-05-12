@@ -122,7 +122,7 @@ export const Buy: FC<BuyProps> = ({ contractAddress, data, buyable, setBuyable, 
         }
         
     }
-    console.log("data = ", data);
+    
     React.useEffect(() => {
         if(allowanceValidating === false){
             const swapperAmount = Number(formatUnits(data[0].swapperFeeAmount, data.swapperTokenDetails.decimals));
