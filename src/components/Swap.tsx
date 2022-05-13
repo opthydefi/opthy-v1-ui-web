@@ -59,8 +59,8 @@ export const Swap: FC<SwapProps> = ({ data }: SwapProps) => {
     const provider = new ethers.providers.Web3Provider(ethereum);
     const signer = provider.getSigner();
 
-    const token_0 = useERC20Metadata(data.token0);
-    const token_1 = useERC20Metadata(data.token1);
+    const token_0 = useERC20Metadata(data?.token0);
+    const token_1 = useERC20Metadata(data?.token1);
 
     const [dai, setDai] = React.useState<string>('');
     const [dai2, setDai2] = React.useState<string>('');
@@ -183,7 +183,7 @@ export const Swap: FC<SwapProps> = ({ data }: SwapProps) => {
                                 <Grid item xs={12}>
                                     <Box>
                                         <Typography m={1} sx={{display: 'inline-block'}}>Quantity: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</Typography>
-                                        <Typography sx={{display: 'inline-block'}} gutterBottom variant="body2">~ ${((dai2 === token_0.symbol) ? convertToken0Cur?.currencyIsValidating ? 0 : (Number(formatUnits(data.balanceT0, token_0.decimals)) * convertToken0Cur?.convertResult?.Price).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,'): convertToken1Cur?.currencyIsValidating ? 0 : (Number(formatUnits(data.balanceT1, token_1.decimals)) * convertToken1Cur?.convertResult?.Price).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,'))} USD</Typography>
+                                        <Typography sx={{display: 'inline-block'}} gutterBottom variant="body2">~ ${((dai2 === token_0.symbol) ? convertToken0Cur?.currencyIsValidating ? 0 : (Number(formatUnits(data?.balanceT0, token_0.decimals)) * convertToken0Cur?.convertResult?.Price).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,'): convertToken1Cur?.currencyIsValidating ? 0 : (Number(formatUnits(data?.balanceT1, token_1.decimals)) * convertToken1Cur?.convertResult?.Price).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,'))} USD</Typography>
                                     </Box>
                                     <FormControl sx={{ m: 1, width: 350 }}>
                                         <InputLabel id="demo-controlled-open-select-label2">{token_1.symbol}</InputLabel>

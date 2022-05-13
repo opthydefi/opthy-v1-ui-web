@@ -80,7 +80,7 @@ const BuyContract: FC = (props: any) => {
     // const [transactionLog, setTransactionLog] = React.useState<Array<{}>>([]);
 
     const { singleOpthy, isValidating } = useSingleOpthy(viewContractAddress);
-    const transactionLog = useTransactions(viewContractAddress);
+    let transactionLog = useTransactions(viewContractAddress);
     // console.log("singleOpthy = ", singleOpthy);
 
     // function isInt(n: number){
@@ -235,6 +235,7 @@ const BuyContract: FC = (props: any) => {
                     </Grid>
                 </Grid>
             </Box>
+            { singleOpthy && 
             <Box m={2}>
                 <Grid container spacing={2}>                   
                     {/* Opthy card loop  */}
@@ -248,15 +249,15 @@ const BuyContract: FC = (props: any) => {
                             <CardContent>
                                 <Typography align="center" variant="h5">Providing Liquidity</Typography>
                                 <Divider />
-                                <Typography align="center" variant="h5">{singleOpthy?.token1Details.symbol}/{singleOpthy?.token0Details.symbol}</Typography>
+                                <Typography align="center" variant="h5">{singleOpthy?.token1Details?.symbol}/{singleOpthy?.token0Details?.symbol}</Typography>
                                 
                                 <Grid container spacing={2} mt={0}>
                                     <Grid item xs={12}>
                                         <Paper elevation={0} className={classes.paperTransparent}>
                                             <Typography variant="body2" color="text.secondary">Value at Maturity, minimum * between: </Typography>
                                             <Box p={1}>
-                                                <Typography gutterBottom variant="body2">{Number(formatUnits(singleOpthy[0].rT0, singleOpthy?.token0Details.decimals))} {singleOpthy?.token0Details.symbol}</Typography>
-                                                <Typography gutterBottom variant="body2">{ parseFloat(formatUnits(singleOpthy[0].rT1, singleOpthy?.token1Details.decimals)).toFixed(isFloat(Number(formatUnits(singleOpthy[0].rT1, singleOpthy?.token1Details.decimals))) === true ? 4 : 2) } {singleOpthy?.token1Details.symbol}</Typography>
+                                                <Typography gutterBottom variant="body2">{Number(formatUnits(singleOpthy[0].rT0, singleOpthy?.token0Details?.decimals))} {singleOpthy?.token0Details?.symbol}</Typography>
+                                                <Typography gutterBottom variant="body2">{ parseFloat(formatUnits(singleOpthy[0].rT1, singleOpthy?.token1Details?.decimals)).toFixed(isFloat(Number(formatUnits(singleOpthy[0].rT1, singleOpthy?.token1Details?.decimals))) === true ? 4 : 2) } {singleOpthy?.token1Details?.symbol}</Typography>
                                             </Box>
                                         </Paper>
                                     </Grid>
@@ -272,7 +273,7 @@ const BuyContract: FC = (props: any) => {
                                     </Grid>
                                 </Grid>
                             </CardContent>
-                            { Number(formatUnits(singleOpthy[0]?.liquidityProviderFeeAmount, singleOpthy?.liquidityProviderTokenDetails.decimals)) > 0 ?
+                            { Number(formatUnits(singleOpthy[0]?.liquidityProviderFeeAmount, singleOpthy?.liquidityProviderTokenDetails?.decimals)) > 0 ?
                             <CardActions>
                                 <Grid container spacing={2} mt={0} justifyContent="center">
                                     <Grid item>
@@ -289,10 +290,14 @@ const BuyContract: FC = (props: any) => {
                     </Grid>        
                 </Grid>
             </Box>
-            { swapperBuy || liquidityBuy ?
-            <Swap data={singleOpthy[0]} />
-            :
-            <Buy contractAddress={viewContractAddress} data={singleOpthy} buyable={buyable} setBuyable={setBuyable} liquidityBuyable={liquidityBuyable} setLiquidityBuyable={setLiquidityBuyable} /> 
+            }
+            { singleOpthy ?
+                swapperBuy || liquidityBuy ?
+                <Swap data={singleOpthy[0]} />
+                :
+                <Buy contractAddress={viewContractAddress} data={singleOpthy} buyable={buyable} setBuyable={setBuyable} liquidityBuyable={liquidityBuyable} setLiquidityBuyable={setLiquidityBuyable} /> 
+                
+                : ""
             }
 
             <Box m={2}>

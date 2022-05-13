@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext } from "react";
+import React, { useEffect, useContext } from "react";
 import { ethers } from 'ethers';
 import type { FC, ReactNode } from 'react';
 import { contractABI, contractAddress } from "src/artifacts/constants";
@@ -27,6 +27,7 @@ interface EthereumContextValue extends AppInitializeState {
     setViewContract: (address: string) => Promise<void>;
 }
 
+let { ethereum } = window;
 const initialAppState: AppInitializeState = {
     isMetamaskInstall: null,
     isInitialized: false,
@@ -34,7 +35,7 @@ const initialAppState: AppInitializeState = {
     userCurrentAddress: '',
     userTransactions: [],
     isWalletConnected: false,
-    provider: null,
+    provider: new ethers.providers.Web3Provider(ethereum),
     viewContractAddress: '',
 };
 
