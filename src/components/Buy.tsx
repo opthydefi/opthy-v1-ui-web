@@ -15,6 +15,7 @@ import { ChainId, ERC20, OpthyABI } from 'opthy-v1-core';
 import useSWR from 'swr';
 import { TransactionReceipt, TransactionResponse } from "@ethersproject/providers";
 import { LoadingButton } from "@mui/lab";
+import useERC20Metadata from "src/hooks/useERC20Metadata";
 
 declare let window:any
 const { address, ABI } = ERC20(ChainId.RinkebyTestnet);
@@ -67,7 +68,13 @@ export const Buy: FC<BuyProps> = ({ contractAddress, data, buyable, setBuyable, 
     const provider = new ethers.providers.Web3Provider(ethereum);
     const signer = provider.getSigner();
 
-    const { data: allowanceData, mutate: allowanceMutate, isValidating: allowanceValidating } = useSWR([ABI, data[0].swapperFeeToken, "allowance", userCurrentAddress, contractAddress ]);
+    let lProviderDetail: any = {};
+    lProviderDetail = useERC20Metadata(data?.liquidityProviderFeeToken);
+
+    let swapperDetail: any = {};
+    swapperDetail = useERC20Metadata(data?.swapperFeeToken);
+
+    const { data: allowanceData, mutate: allowanceMutate, isValidating: allowanceValidating } = useSWR([ABI, data.swapperFeeToken, "allowance", userCurrentAddress, contractAddress ]);
 
     const [loading, setLoading] = React.useState<boolean>(false);
     const [liquidityLoading, setLiquidityLoading] = React.useState<boolean>(false);
@@ -78,7 +85,7 @@ export const Buy: FC<BuyProps> = ({ contractAddress, data, buyable, setBuyable, 
             if(role === "swapper"){
                 if(buyable?.status === false){
                     setLoading(true);
-                    const contract = new ethers.Contract(data[0]?.swapperFeeToken, ABI, signer);
+                    const contract = new ethers.Contract(data?.swapperFeeToken, ABI, signer);
                     const txResponse: TransactionResponse = await contract.approve(
                         contractAddress,
                         parseEther("1000000000000")
@@ -99,7 +106,7 @@ export const Buy: FC<BuyProps> = ({ contractAddress, data, buyable, setBuyable, 
             if(role === "liquidity"){
                 if(liquidityBuyable?.status === false){
                     setLiquidityLoading(true);
-                    const contract = new ethers.Contract(data[0]?.liquidityProviderFeeToken, ABI, signer);
+                    const contract = new ethers.Contract(data?.liquidityProviderFeeToken, ABI, signer);
                     const txResponse: TransactionResponse = await contract.approve(
                         contractAddress,
                         parseEther("1000000000000")
@@ -125,10 +132,10 @@ export const Buy: FC<BuyProps> = ({ contractAddress, data, buyable, setBuyable, 
     
     React.useEffect(() => {
         if(allowanceValidating === false){
-            const swapperAmount = Number(formatUnits(data[0]?.swapperFeeAmount, data?.swapperTokenDetails?.decimals));
-            const liquidityAmount = Number(formatUnits(data[0].liquidityProviderFeeAmount, data?.liquidityProviderTokenDetails?.decimals));
+            const swapperAmount = Number(formatUnits(data?.swapperFeeAmount, swapperDetail?.decimals));
+            const liquidityAmount = Number(formatUnits(data.liquidityProviderFeeAmount, lProviderDetail?.decimals));
             if(swapperAmount > 0) {
-                const allownaceAmount = Number(formatUnits(allowanceData, data?.swapperTokenDetails?.decimals));
+                const allownaceAmount = Number(formatUnits(allowanceData, swapperDetail?.decimals));
                 if(allownaceAmount > 0){
                     if(allownaceAmount > swapperAmount){
                         setBuyable({status: true, message: ""});
@@ -136,7 +143,7 @@ export const Buy: FC<BuyProps> = ({ contractAddress, data, buyable, setBuyable, 
                 }
             }
             if(liquidityAmount > 0) {
-                const allownaceAmount = Number(formatUnits(allowanceData, data?.liquidityProviderTokenDetails?.decimals));
+                const allownaceAmount = Number(formatUnits(allowanceData, lProviderDetail?.decimals));
                 if(allownaceAmount > 0){
                     if(allownaceAmount > liquidityAmount){
                         setLiquidityBuyable({status: true, message: ""});
@@ -169,16 +176,16 @@ export const Buy: FC<BuyProps> = ({ contractAddress, data, buyable, setBuyable, 
                             </Box>
                             <Box textAlign='center' m={5}>
 
-                            { Number(formatUnits(data[0]?.swapperFeeAmount, data?.swapperTokenDetails?.decimals)) > 0 ? 
+                            { Number(formatUnits(data?.swapperFeeAmount, swapperDetail?.decimals)) > 0 ? 
                                 <>
-                                <Typography align="center" variant="h5">Pay { parseFloat(formatUnits(data[0]?.swapperFeeAmount, data?.swapperTokenDetails?.decimals)).toFixed(2)} {data?.swapperTokenDetails?.symbol}</Typography>
+                                <Typography align="center" variant="h5">Pay { parseFloat(formatUnits(data?.swapperFeeAmount, swapperDetail?.decimals)).toFixed(2)} {swapperDetail?.symbol}</Typography>
                                 <Typography align="center">to become the Swapper</Typography>
 
                                 {buyable?.status === false ? 
                                     loading === true ? 
                                     <LoadingButton sx={{ m: 3 }} loading variant="outlined"> Submit </LoadingButton>
                                     : 
-                                    <Button onClick={() => clickApprove("swapper")} size="medium" sx={{ m: 3 }} variant="contained" color="primary">Approve {data?.swapperTokenDetails?.symbol} to Buy</Button>
+                                    <Button onClick={() => clickApprove("swapper")} size="medium" sx={{ m: 3 }} variant="contained" color="primary">Approve {swapperDetail?.symbol} to Buy</Button>
                                 :
                                 <Button sx={{ m: 3 }} variant="outlined" disabled> Approved </Button>
                                 }
@@ -205,16 +212,16 @@ export const Buy: FC<BuyProps> = ({ contractAddress, data, buyable, setBuyable, 
                                 <Divider />
                             </Box>
                             <Box textAlign='center' m={5}>
-                            { Number(formatUnits(data[0]?.liquidityProviderFeeAmount, data?.liquidityProviderTokenDetails?.decimals)) > 0 ? 
+                            { Number(formatUnits(data?.liquidityProviderFeeAmount, lProviderDetail?.decimals)) > 0 ? 
                                 <>
-                                <Typography align="center" variant="h5">Pay { parseFloat(formatUnits(data[0]?.liquidityProviderFeeAmount, data?.liquidityProviderTokenDetails?.decimals)).toFixed(2)} {data?.liquidityProviderTokenDetails?.symbol}</Typography>
+                                <Typography align="center" variant="h5">Pay { parseFloat(formatUnits(data?.liquidityProviderFeeAmount, lProviderDetail?.decimals)).toFixed(2)} {lProviderDetail?.symbol}</Typography>
                                 <Typography align="center">to become the Liquidity Provider</Typography>
 
                                 {liquidityBuyable?.status === false ? 
                                     liquidityLoading === true ? 
                                     <LoadingButton sx={{ m: 3 }} loading variant="outlined"> Submit </LoadingButton>
                                     : 
-                                    <Button onClick={() => clickApprove("liquidity")} size="medium" sx={{ m: 3 }} variant="contained" color="primary">Approve {data?.liquidityProviderTokenDetails?.symbol} to Buy</Button>
+                                    <Button onClick={() => clickApprove("liquidity")} size="medium" sx={{ m: 3 }} variant="contained" color="primary">Approve {lProviderDetail?.symbol} to Buy</Button>
                                 :
                                 <Button sx={{ m: 3 }} variant="outlined" disabled> Approved </Button>
                                 }

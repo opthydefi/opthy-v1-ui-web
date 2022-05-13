@@ -12,7 +12,7 @@ import {ContractInterface, ethers} from "ethers";
 import { useERC20Metadata, CURRENCY_CONVERT } from "src/utils/helpers";
 import { formatUnits, parseEther, parseUnits } from '@ethersproject/units';
 
-declare let window:any
+
 // const { address, ABI } = ERC20(ChainId.RinkebyTestnet);
 
 const useStyles = makeStyles((theme: Theme) => ({
@@ -54,10 +54,8 @@ interface SwapProps {
 export const Swap: FC<SwapProps> = ({ data }: SwapProps) => {
     // console.log("data = ", data);
     const classes = useStyles();
-    const { userCurrentAddress } = useEthersState();
-    let { ethereum } = window;
-    const provider = new ethers.providers.Web3Provider(ethereum);
-    const signer = provider.getSigner();
+    const { userCurrentAddress, provider } = useEthersState();
+    // const signer = provider.getSigner();
 
     const token_0 = useERC20Metadata(data?.token0);
     const token_1 = useERC20Metadata(data?.token1);
@@ -94,10 +92,10 @@ export const Swap: FC<SwapProps> = ({ data }: SwapProps) => {
         setOpen2(true);
     };
 
-    const convertToken0Cur = CURRENCY_CONVERT(token_0.symbol);
-    const convertToken1Cur = CURRENCY_CONVERT(token_1.symbol);
+    const convertToken0Cur = CURRENCY_CONVERT(token_0?.symbol);
+    const convertToken1Cur = CURRENCY_CONVERT(token_1?.symbol);
     provider.getBalance(userCurrentAddress)
-    .then((result)=> {
+    .then((result: ethers.BigNumberish)=> {
         setUserBalance(ethers.utils.formatEther(result))
     });
 

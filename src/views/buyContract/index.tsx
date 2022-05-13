@@ -7,7 +7,7 @@ import { OpthyCard } from "src/components/Card";
 import { Buy } from "src/components/Buy";
 import { Swap } from "src/components/Swap";
 import makeStyles from '@mui/styles/makeStyles';
-import { formatUnits, parseEther } from '@ethersproject/units';
+import { formatUnits } from '@ethersproject/units'; //parseEther
 import { ChainId, OpthyABI } from 'opthy-v1-core';
 import { ethers } from "ethers";
 import { TransactionReceipt, TransactionResponse } from "@ethersproject/providers";
@@ -16,6 +16,7 @@ import { LoadingButton } from "@mui/lab";
 // import { useERC20Metadata, CURRENCY_CONVERT } from "src/utils/helpers";
 import useSingleOpthy from "src/hooks/useSingleOpthy";
 import useTransactions from "src/hooks/useTransactions";
+import useERC20Metadata from "src/hooks/useERC20Metadata";
 
 const opthyABI = OpthyABI(ChainId.RinkebyTestnet);
 
@@ -67,6 +68,29 @@ const BuyContract: FC = (props: any) => {
     let transactionLog = useTransactions(viewContractAddress);
     // console.log("singleOpthy = ", singleOpthy);
 
+
+    // Expire Calculation
+    const now = Math.floor(Date.now() / 1000);
+    const expire = parseInt(singleOpthy?.expiration);
+    let delta = expire - now;
+    const days = Math.floor(delta / 86400);
+    delta -= days * 86400;
+    const hours = Math.floor(delta / 3600) % 24;
+    delta -= hours * 3600;
+    const minutes = Math.floor(delta / 60) % 60;
+    delta -= minutes * 60;
+    const seconds = delta % 60;
+    const opthyExpiration = days +' days ' + hours + 'h. ' + minutes + 'm. ' + seconds + 's.';
+
+    let token_0: any = {};
+    token_0 = useERC20Metadata(singleOpthy?.token0);
+
+    let token_1: any = {};
+    token_1 = useERC20Metadata(singleOpthy?.token1);
+
+    let lProviderDetail: any = {};
+    lProviderDetail = useERC20Metadata(singleOpthy?.liquidityProviderFeeToken);
+
     // function isInt(n: number){
     //     return Number(n) === n && n % 1 === 0;
     // }
@@ -76,14 +100,14 @@ const BuyContract: FC = (props: any) => {
 
     const clickLiquidityBuyContract = async (): Promise<void> => {
         if(liquidityBuyable?.status === true){
-            const liquidityAmount = formatUnits(singleOpthy[0].liquidityProviderFeeAmount, singleOpthy.liquidityProviderTokenDetails.decimals);
+            const liquidityAmount = formatUnits(singleOpthy.liquidityProviderFeeAmount, singleOpthy.liquidityProviderTokenDetails.decimals);
             if(Number(liquidityAmount) > 0){
                 try {
                     setLiquidityBuyLoading(true);
                     const contract = new ethers.Contract(viewContractAddress, opthyABI, provider.getSigner());
                     const txResponse: TransactionResponse = await contract.buyLiquidityProviderRole(
-                        singleOpthy[0].liquidityProviderFeeToken,
-                        singleOpthy[0].liquidityProviderFeeAmount
+                        singleOpthy.liquidityProviderFeeToken,
+                        singleOpthy.liquidityProviderFeeAmount
                     );
                     console.log("Buy Liquidity Transaction Response = ", txResponse);
                     const txReceipt: TransactionReceipt = await txResponse.wait();
@@ -223,7 +247,7 @@ const BuyContract: FC = (props: any) => {
                 <Grid container spacing={2}>                   
                     {/* Opthy card loop  */}
                     <Grid item xs={12} md={4}>
-                        <OpthyCard data={singleOpthy[0]} calledFrom="buyContract" buyableProp={buyable} liquidityBuy={liquidityBuy} swapperBuy={swapperBuy} setSwapperBuy={setSwapperBuy} />
+                        <OpthyCard data={singleOpthy} calledFrom="buyContract" buyableProp={buyable} liquidityBuy={liquidityBuy} swapperBuy={swapperBuy} setSwapperBuy={setSwapperBuy} />
                     </Grid>
                     {/* Opthy card loop  */}
                     <Grid item xs={12} md={4}>
@@ -232,15 +256,15 @@ const BuyContract: FC = (props: any) => {
                             <CardContent>
                                 <Typography align="center" variant="h5">Providing Liquidity</Typography>
                                 <Divider />
-                                <Typography align="center" variant="h5">{singleOpthy?.token1Details?.symbol}/{singleOpthy?.token0Details?.symbol}</Typography>
+                                <Typography align="center" variant="h5">{token_1?.symbol}/{token_0?.symbol}</Typography>
                                 
                                 <Grid container spacing={2} mt={0}>
                                     <Grid item xs={12}>
                                         <Paper elevation={0} className={classes.paperTransparent}>
                                             <Typography variant="body2" color="text.secondary">Value at Maturity, minimum * between: </Typography>
                                             <Box p={1}>
-                                                <Typography gutterBottom variant="body2">{Number(formatUnits(singleOpthy[0].rT0, singleOpthy?.token0Details?.decimals))} {singleOpthy?.token0Details?.symbol}</Typography>
-                                                <Typography gutterBottom variant="body2">{ parseFloat(formatUnits(singleOpthy[0].rT1, singleOpthy?.token1Details?.decimals)).toFixed(isFloat(Number(formatUnits(singleOpthy[0].rT1, singleOpthy?.token1Details?.decimals))) === true ? 4 : 2) } {singleOpthy?.token1Details?.symbol}</Typography>
+                                                <Typography gutterBottom variant="body2">{Number(formatUnits(singleOpthy.rT0, token_0?.decimals))} {token_0?.symbol}</Typography>
+                                                <Typography gutterBottom variant="body2">{ parseFloat(formatUnits(singleOpthy.rT1, token_1?.decimals)).toFixed(isFloat(Number(formatUnits(singleOpthy.rT1, token_1?.decimals))) === true ? 4 : 2) } {token_1?.symbol}</Typography>
                                             </Box>
                                         </Paper>
                                     </Grid>
@@ -250,13 +274,13 @@ const BuyContract: FC = (props: any) => {
                                         <Paper elevation={0} className={classes.paperTransparent}>
                                             <Typography variant="body2" color="text.secondary">Matures In: </Typography>
                                             <Box p={1}>
-                                                <Typography gutterBottom variant="body2">{singleOpthy?.opthyExpiration}</Typography>
+                                                <Typography gutterBottom variant="body2">{opthyExpiration}</Typography>
                                             </Box>
                                         </Paper>
                                     </Grid>
                                 </Grid>
                             </CardContent>
-                            { Number(formatUnits(singleOpthy[0]?.liquidityProviderFeeAmount, singleOpthy?.liquidityProviderTokenDetails?.decimals)) > 0 ?
+                            { Number(formatUnits(singleOpthy?.liquidityProviderFeeAmount, lProviderDetail?.decimals)) > 0 ?
                             <CardActions>
                                 <Grid container spacing={2} mt={0} justifyContent="center">
                                     <Grid item>
@@ -276,7 +300,7 @@ const BuyContract: FC = (props: any) => {
             }
             { singleOpthy ?
                 swapperBuy || liquidityBuy ?
-                <Swap data={singleOpthy[0]} />
+                <Swap data={singleOpthy} />
                 :
                 <Buy contractAddress={viewContractAddress} data={singleOpthy} buyable={buyable} setBuyable={setBuyable} liquidityBuyable={liquidityBuyable} setLiquidityBuyable={setLiquidityBuyable} /> 
                 

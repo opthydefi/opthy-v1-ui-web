@@ -1,29 +1,20 @@
 import React from "react";
 import type { FC } from "react"
-import { Button, Paper } from '@mui/material';
-import Card from '@mui/material/Card';
-import CardContent from '@mui/material/CardContent';
-import CardMedia from '@mui/material/CardMedia';
+import { Button, Paper, Card, CardContent, CardActions, Box, Grid } from '@mui/material';
 import Typography from '@mui/material/Typography';
-import { CardActionArea, CardActions, Box, Grid } from '@mui/material';
 import type { Theme } from 'src/types/theme';
 import makeStyles from '@mui/styles/makeStyles';
 import LinearProgress, { linearProgressClasses } from '@mui/material/LinearProgress';
 import { styled } from '@mui/material/styles';
 import Divider from '@mui/material/Divider';
-import { formatUnits, parseEther, parseUnits } from '@ethersproject/units';
+import { formatUnits, parseEther,  } from '@ethersproject/units'; //parseUnits
 import { useERC20Metadata, CURRENCY_CONVERT } from "src/utils/helpers";
 import { useEthersState } from 'src/contexts/EthereumContext';
 import {ethers} from "ethers";
 import { Link, useHistory } from "react-router-dom";
-import { ChainId, ERC20, OpthyABI } from 'opthy-v1-core';
-import useSWR from 'swr';
+import { ChainId, OpthyABI } from 'opthy-v1-core';
 import { TransactionReceipt, TransactionResponse } from "@ethersproject/providers";
-import { LoadingButton } from "@mui/lab";
-
-// declare let window:any
-// const ERCMetaData = ERC20(ChainId.RinkebyTestnet);
-// console.log("ERCMetaData = ", ERCMetaData);
+import { LoadingButton } from "@mui/lab"
 
 const useStyles = makeStyles((theme: Theme) => ({
     root: {
@@ -71,8 +62,6 @@ export const OpthyCard: FC<CardProps> = ({ data, calledFrom, buyableProp, liquid
 
     let opthyABI = OpthyABI(ChainId.RinkebyTestnet);
     // console.log("MyOpthys = ", MyOpthys);
-    
-
 
     let result: any = {}
     let { opthy: contractAddress, expiration, token0, token1, swapper, swapperFeeAmount, swapperFeeToken, liquidityProvider, liquidityProviderFeeAmount, liquidityProviderFeeToken, balanceT0, balanceT1, rT0, rT1 } = data;
