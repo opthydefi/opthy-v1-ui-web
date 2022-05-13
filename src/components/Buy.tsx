@@ -1,24 +1,21 @@
 import React from "react";
 import type { FC } from "react"
-import { Button, Paper } from '@mui/material';
-import Card from '@mui/material/Card';
-import CardContent from '@mui/material/CardContent';
+import { Button, Card, CardContent,  } from '@mui/material';
 import Typography from '@mui/material/Typography';
 import { Box, Grid } from '@mui/material';
 import type { Theme } from 'src/types/theme';
 import makeStyles from '@mui/styles/makeStyles';
 import Divider from '@mui/material/Divider';
-import { formatUnits, parseEther, parseUnits } from '@ethersproject/units';
+import { formatUnits, parseEther } from '@ethersproject/units';  // parseUnits
 import { useEthersState } from 'src/contexts/EthereumContext';
-import {ContractInterface, ethers} from "ethers";
-import { ChainId, ERC20, OpthyABI } from 'opthy-v1-core';
-import useSWR from 'swr';
+import { ethers } from "ethers";  // ContractInterface
+import { ChainId, ERC20 } from 'opthy-v1-core'; // OpthyABI
 import { TransactionReceipt, TransactionResponse } from "@ethersproject/providers";
 import { LoadingButton } from "@mui/lab";
 import useERC20Metadata from "src/hooks/useERC20Metadata";
+import useAllowance from "src/hooks/useAllowance";
 
-declare let window:any
-const { address, ABI } = ERC20(ChainId.RinkebyTestnet);
+const { ABI } = ERC20(ChainId.RinkebyTestnet);
 
 const useStyles = makeStyles((theme: Theme) => ({
     root: {
@@ -63,10 +60,7 @@ interface BuyProps {
 
 export const Buy: FC<BuyProps> = ({ contractAddress, data, buyable, setBuyable, liquidityBuyable, setLiquidityBuyable }: BuyProps) => {
     const classes = useStyles();
-    const { userCurrentAddress } = useEthersState();
-    let { ethereum } = window;
-    const provider = new ethers.providers.Web3Provider(ethereum);
-    const signer = provider.getSigner();
+    const { provider } = useEthersState();
 
     let lProviderDetail: any = {};
     lProviderDetail = useERC20Metadata(data?.liquidityProviderFeeToken);
@@ -74,26 +68,24 @@ export const Buy: FC<BuyProps> = ({ contractAddress, data, buyable, setBuyable, 
     let swapperDetail: any = {};
     swapperDetail = useERC20Metadata(data?.swapperFeeToken);
 
-    const { data: allowanceData, mutate: allowanceMutate, isValidating: allowanceValidating } = useSWR([ABI, data.swapperFeeToken, "allowance", userCurrentAddress, contractAddress ]);
+    const { allowanceData, isValidating } = useAllowance(data.swapperFeeToken, contractAddress)
 
     const [loading, setLoading] = React.useState<boolean>(false);
     const [liquidityLoading, setLiquidityLoading] = React.useState<boolean>(false);
 
     const clickApprove = async (role: string): Promise<void> => {
         try {
-            const iface:ContractInterface = new ethers.utils.Interface(ABI)
+            // const iface:ContractInterface = new ethers.utils.Interface(ABI)
             if(role === "swapper"){
                 if(buyable?.status === false){
                     setLoading(true);
-                    const contract = new ethers.Contract(data?.swapperFeeToken, ABI, signer);
+                    const contract = new ethers.Contract(data?.swapperFeeToken, ABI, provider.getSigner());
                     const txResponse: TransactionResponse = await contract.approve(
                         contractAddress,
                         parseEther("1000000000000")
                     );
                     console.log("Swapper approve transaction = ", txResponse);
                     const txReceipt: TransactionReceipt = await txResponse.wait();
-                    await allowanceMutate(allowanceData, true);
-                    // await opthyMutate(opthys, true);
                     setLoading(false);
                     console.log("txReceipt = ", txReceipt)
                     console.log("txReceipt log = ", txReceipt.logs[0])
@@ -106,14 +98,13 @@ export const Buy: FC<BuyProps> = ({ contractAddress, data, buyable, setBuyable, 
             if(role === "liquidity"){
                 if(liquidityBuyable?.status === false){
                     setLiquidityLoading(true);
-                    const contract = new ethers.Contract(data?.liquidityProviderFeeToken, ABI, signer);
+                    const contract = new ethers.Contract(data?.liquidityProviderFeeToken, ABI, provider.getSigner());
                     const txResponse: TransactionResponse = await contract.approve(
                         contractAddress,
                         parseEther("1000000000000")
                     );
                     console.log("Liquidity approve transaction = ", txResponse);
                     const txReceipt: TransactionReceipt = await txResponse.wait();
-                    await allowanceMutate(allowanceData, true);
                     setLiquidityLoading(false);
                     console.log("txReceipt = ", txReceipt)
                     console.log("txReceipt log = ", txReceipt.logs[0])
@@ -131,9 +122,9 @@ export const Buy: FC<BuyProps> = ({ contractAddress, data, buyable, setBuyable, 
     }
     
     React.useEffect(() => {
-        if(allowanceValidating === false){
+        if(isValidating === false){
             const swapperAmount = Number(formatUnits(data?.swapperFeeAmount, swapperDetail?.decimals));
-            const liquidityAmount = Number(formatUnits(data.liquidityProviderFeeAmount, lProviderDetail?.decimals));
+            const liquidityAmount = Number(formatUnits(data?.liquidityProviderFeeAmount, lProviderDetail?.decimals));
             if(swapperAmount > 0) {
                 const allownaceAmount = Number(formatUnits(allowanceData, swapperDetail?.decimals));
                 if(allownaceAmount > 0){
@@ -151,12 +142,11 @@ export const Buy: FC<BuyProps> = ({ contractAddress, data, buyable, setBuyable, 
                 }
             }
         }
-    }, [allowanceValidating]);
+    }, [isValidating]);
 
-    if(allowanceValidating === true){
+    if(isValidating === true){
         return <Typography className={classes.loadingClass} gutterBottom variant="h5" component="div">Loading...</Typography>
     }
-
     return (
         <Box m={2}>
             <Grid container spacing={2}>

@@ -1,9 +1,10 @@
-import React, { useEffect, useContext } from "react";
+import React, { useEffect, useContext, useCallback } from "react";
 import { ethers } from 'ethers';
 import type { FC, ReactNode } from 'react';
-import { contractABI, contractAddress } from "src/artifacts/constants";
+// import { contractABI, contractAddress } from "src/artifacts/constants";
 import LoadingScreen from 'src/components/LoadingScreen';
 import InstallMetamask from 'src/views/errors/InstallMetamask';
+import type { Web3Provider } from "@ethersproject/providers";
 
 
 
@@ -17,7 +18,7 @@ interface AppInitializeState {
     userCurrentAddress: string;
     userTransactions: any[];
     isWalletConnected: boolean;
-    provider: any;
+    provider: Web3Provider;
 }
 
 interface EthereumContextValue extends AppInitializeState {
@@ -127,19 +128,19 @@ export const EthereumProvider: FC<EthereumProviderProps> = ({ children }) => {
     // console.log(ethereum, "ethereum")
 
 
-    const createEthereumContract = () => {
-        const provider = new ethers.providers.Web3Provider(ethereum);
-        const signer = provider.getSigner();
-        const transactionsContract = new ethers.Contract(contractAddress, contractABI, signer);
-        // console.log(provider, signer, transactionsContract, 'provider, signer, transactionsContract')
-        return transactionsContract;
-    };
+    // const createEthereumContract = () => {
+    //     const provider = new ethers.providers.Web3Provider(ethereum);
+    //     const signer = provider.getSigner();
+    //     const transactionsContract = new ethers.Contract(contractAddress, contractABI, signer);
+    //     // console.log(provider, signer, transactionsContract, 'provider, signer, transactionsContract')
+    //     return transactionsContract;
+    // };
 
-    const initializeProvider = () => {
-        const provider = new ethers.providers.Web3Provider(ethereum);
-        const signer = provider.getSigner();
-        // console.log(provider, signer, 'provider, signer')
-    }
+    // const initializeProvider = () => {
+    //     const provider = new ethers.providers.Web3Provider(ethereum);
+    //     const signer = provider.getSigner();
+    //     // console.log(provider, signer, 'provider, signer')
+    // }
 
 
     React.useEffect(() => {
@@ -160,7 +161,7 @@ export const EthereumProvider: FC<EthereumProviderProps> = ({ children }) => {
                         isMetamaskInstall: true,
                     }
                 })
-                initializeProvider();
+                // initializeProvider();
                 if (ethereum.selectedAddress) {
                     connectWallet();
                 }
@@ -217,7 +218,7 @@ export const EthereumProvider: FC<EthereumProviderProps> = ({ children }) => {
 
 
 
-    const connectWallet = async () => {
+    const connectWallet = useCallback(async () => {
         try {
             if (!ethereum) return alert("Please install MetaMask.");
 
@@ -237,9 +238,13 @@ export const EthereumProvider: FC<EthereumProviderProps> = ({ children }) => {
 
             throw new Error("No ethereum object");
         }
-    };
+    }, [ethereum]);
 
-    const anyFunc = async () => { }
+    React.useEffect(() => {
+        connectWallet();
+    }, [connectWallet])
+
+    // const anyFunc = async () => { }
 
 
     if (!state.isInitialized) {

@@ -1,13 +1,11 @@
-import { useEffect } from 'react';
-import { ethers} from "ethers";
-import { useState } from 'react';
+import React from "react";
 import { TransactionReceipt } from '@ethersproject/providers';
-declare let window:any
+import { useEthersState } from "src/contexts/EthereumContext";
+import type { Web3Provider } from "@ethersproject/providers";
+import useBlockNumber from "./useBlockNumber";
 
-let { ethereum } = window;
-const provider = new ethers.providers.Web3Provider(ethereum);
-
-async function getTransactionLogs(contractAddress: string) {
+async function getTransactionLogs(contractAddress: string, provider: Web3Provider) {
+    
     const logs = await provider.getLogs({
         fromBlock: 0,
         toBlock: "latest",
@@ -25,20 +23,24 @@ async function getTransactionLogs(contractAddress: string) {
 }
 
 export default function useTransactions (address: string) {
-  const [transactionLogs, setTransactionLogs] = useState<TransactionReceipt[]>([]);
+    const { provider } = useEthersState();
+    
+    const [transactionLogs, setTransactionLogs] = React.useState<TransactionReceipt[]>([]);
 
-  useEffect(() => {
-    const fetchTransactionLogs = async () => {
-        try {
-            const getAllTransactionLogs = await getTransactionLogs(address);
-            setTransactionLogs(getAllTransactionLogs)
-        } catch (error) {
-            console.error(error);
+    const { data } = useBlockNumber();
+
+    React.useEffect(() => {
+        const fetchTransactionLogs = async () => {
+            try {
+                const getAllTransactionLogs = await getTransactionLogs(address, provider);
+                setTransactionLogs(getAllTransactionLogs)
+            } catch (error) {
+                console.error(error);
+            }
         }
-    }
 
-    fetchTransactionLogs();
-  }, [address])
+        fetchTransactionLogs();
+    }, [address, data])
 
-  return transactionLogs;
+    return transactionLogs;
 }

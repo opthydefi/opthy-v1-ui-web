@@ -1,9 +1,10 @@
 import type { Web3Provider } from "@ethersproject/providers";
-// import { useWeb3React } from "@web3-react/core";
-import { ethers } from 'ethers';
+// import { ethers } from 'ethers';
 import useSWR from "swr";
+import { useEthersState } from "src/contexts/EthereumContext";
 
-declare const window: any;
+
+// declare const window: any;
 
 function getBlockNumber(library: Web3Provider) {
     return async () => {
@@ -12,12 +13,14 @@ function getBlockNumber(library: Web3Provider) {
 }
 
 export default function useBlockNumber() {
-//   const { library } = useWeb3React<Web3Provider>();
-    const { ethereum } = window;
-    const library: Web3Provider = new ethers.providers.Web3Provider(ethereum, "any");
-    const shouldFetch = !!library;
 
-    return useSWR(shouldFetch ? ["BlockNumber"] : null, getBlockNumber(library), {
+    const { provider } = useEthersState();
+    
+    // const { ethereum } = window;
+    // const library: Web3Provider = new ethers.providers.Web3Provider(ethereum, "any");
+    const shouldFetch = !!provider;
+
+    return useSWR(shouldFetch ? ["BlockNumber"] : null, getBlockNumber(provider), {
         refreshInterval: 10 * 1000,
     });
 }

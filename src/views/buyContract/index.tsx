@@ -13,7 +13,6 @@ import { ethers } from "ethers";
 import { TransactionReceipt, TransactionResponse } from "@ethersproject/providers";
 import moment from 'moment';
 import { LoadingButton } from "@mui/lab";
-// import { useERC20Metadata, CURRENCY_CONVERT } from "src/utils/helpers";
 import useSingleOpthy from "src/hooks/useSingleOpthy";
 import useTransactions from "src/hooks/useTransactions";
 import useERC20Metadata from "src/hooks/useERC20Metadata";
@@ -94,7 +93,7 @@ const BuyContract: FC = (props: any) => {
     // function isInt(n: number){
     //     return Number(n) === n && n % 1 === 0;
     // }
-    function isFloat(n: number){
+    function isFloat(n: number) {
         return Number(n) === n && n % 1 !== 0;
     }
 
@@ -111,12 +110,8 @@ const BuyContract: FC = (props: any) => {
                     );
                     console.log("Buy Liquidity Transaction Response = ", txResponse);
                     const txReceipt: TransactionReceipt = await txResponse.wait();
-                    // await expirationMutate(singleOpthy.opthyExpiration,true);
-                    // await swapFeeMutate(opthySwapFee,true);
-                    // await lpFeeMutate(opthyLpFee,true);
                     setLiquidityBuyLoading(false);
                     setLiquidityBuy(true);
-                    // await opthyMutate(opthys, true);
                     console.log("txReceipt = ", txReceipt)
                     console.log("txReceipt log = ", txReceipt.logs[0])
                 } catch (error: any) {
@@ -130,30 +125,6 @@ const BuyContract: FC = (props: any) => {
             alert(liquidityBuyable?.message);
         }
     }
-
-    // React.useEffect(() => {
-    //     getPastEvents();
-    //     async function getPastEvents(){
-    //         try {
-    //             const logs = await provider.getLogs({
-    //                 fromBlock: 0,
-    //                 toBlock: "latest",
-    //                 address: viewContractAddress,
-    //                 // topics: [null],
-    //             });
-    //             const newLogs = logs.map(async function(log) {
-    //                 const logData = await provider.getTransactionReceipt(log.transactionHash);
-    //                 logData['timestamp'] = (await provider.getBlock(logData.blockNumber)).timestamp;
-    //                 return logData;
-    //             })
-    //             const getAllLogs = await Promise.all(newLogs);
-    //             // console.log("getAllLogs = ", getAllLogs);
-    //             setTransactionLog(getAllLogs)
-    //         } catch (error) {
-    //             console.log(error);
-    //         }
-    //     }
-    // }, [swapperBuy, liquidityBuy]);
 
     // Event Call
     // React.useEffect(() => {
@@ -204,8 +175,6 @@ const BuyContract: FC = (props: any) => {
     //         console.log("buy Swapper Provider check = ", userCurrentAddress + " || " + buySwapperChk);
     //     }
     // },[])
-
-    
     
     
     if(isValidating === true){
@@ -242,7 +211,7 @@ const BuyContract: FC = (props: any) => {
                     </Grid>
                 </Grid>
             </Box>
-            { singleOpthy && 
+            { singleOpthy &&
             <Box m={2}>
                 <Grid container spacing={2}>                   
                     {/* Opthy card loop  */}
@@ -280,7 +249,7 @@ const BuyContract: FC = (props: any) => {
                                     </Grid>
                                 </Grid>
                             </CardContent>
-                            { Number(formatUnits(singleOpthy?.liquidityProviderFeeAmount, lProviderDetail?.decimals)) > 0 ?
+                            { Number(formatUnits(singleOpthy?.liquidityProviderFeeAmount, lProviderDetail?.decimals)) &&
                             <CardActions>
                                 <Grid container spacing={2} mt={0} justifyContent="center">
                                     <Grid item>
@@ -292,19 +261,17 @@ const BuyContract: FC = (props: any) => {
                                     </Grid>
                                 </Grid>
                             </CardActions>
-                            : "" }
+                            }
                         </Card>
                     </Grid>        
                 </Grid>
             </Box>
             }
-            { singleOpthy ?
+            { singleOpthy && (
                 swapperBuy || liquidityBuy ?
                 <Swap data={singleOpthy} />
                 :
-                <Buy contractAddress={viewContractAddress} data={singleOpthy} buyable={buyable} setBuyable={setBuyable} liquidityBuyable={liquidityBuyable} setLiquidityBuyable={setLiquidityBuyable} /> 
-                
-                : ""
+                <Buy contractAddress={viewContractAddress} data={singleOpthy} buyable={buyable} setBuyable={setBuyable} liquidityBuyable={liquidityBuyable} setLiquidityBuyable={setLiquidityBuyable} /> )
             }
 
             <Box m={2}>

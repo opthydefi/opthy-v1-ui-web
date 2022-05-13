@@ -1,6 +1,6 @@
 import React from "react";
 import type { FC } from "react"
-import { Button, FormControl, InputLabel, Select, MenuItem, Paper } from '@mui/material';
+import { Button, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
@@ -8,12 +8,10 @@ import { Box, Grid } from '@mui/material';
 import type { Theme } from 'src/types/theme';
 import makeStyles from '@mui/styles/makeStyles';
 import { useEthersState } from 'src/contexts/EthereumContext';
-import {ContractInterface, ethers} from "ethers";
-import { useERC20Metadata, CURRENCY_CONVERT } from "src/utils/helpers";
-import { formatUnits, parseEther, parseUnits } from '@ethersproject/units';
-
-
-// const { address, ABI } = ERC20(ChainId.RinkebyTestnet);
+import { ethers } from "ethers"; // ContractInterface
+import { formatUnits } from '@ethersproject/units'; // parseEther, parseUnits
+import useERC20Metadata from "src/hooks/useERC20Metadata";
+import useCurrency from "src/hooks/useCurrency";
 
 const useStyles = makeStyles((theme: Theme) => ({
     root: {
@@ -92,8 +90,8 @@ export const Swap: FC<SwapProps> = ({ data }: SwapProps) => {
         setOpen2(true);
     };
 
-    const convertToken0Cur = CURRENCY_CONVERT(token_0?.symbol);
-    const convertToken1Cur = CURRENCY_CONVERT(token_1?.symbol);
+    const convertToken0Cur = useCurrency(token_0?.symbol);
+    const convertToken1Cur = useCurrency(token_1?.symbol);
     provider.getBalance(userCurrentAddress)
     .then((result: ethers.BigNumberish)=> {
         setUserBalance(ethers.utils.formatEther(result))

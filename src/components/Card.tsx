@@ -1,20 +1,20 @@
 import React from "react";
 import type { FC } from "react"
-import { Button, Paper, Card, CardContent, CardActions, Box, Grid } from '@mui/material';
+import { Button, Paper, Card, CardContent, CardActions, Box, Grid, Divider } from '@mui/material';
 import Typography from '@mui/material/Typography';
 import type { Theme } from 'src/types/theme';
 import makeStyles from '@mui/styles/makeStyles';
 import LinearProgress, { linearProgressClasses } from '@mui/material/LinearProgress';
 import { styled } from '@mui/material/styles';
-import Divider from '@mui/material/Divider';
 import { formatUnits, parseEther,  } from '@ethersproject/units'; //parseUnits
-import { useERC20Metadata, CURRENCY_CONVERT } from "src/utils/helpers";
 import { useEthersState } from 'src/contexts/EthereumContext';
 import {ethers} from "ethers";
 import { Link, useHistory } from "react-router-dom";
 import { ChainId, OpthyABI } from 'opthy-v1-core';
 import { TransactionReceipt, TransactionResponse } from "@ethersproject/providers";
 import { LoadingButton } from "@mui/lab"
+import useERC20Metadata from "src/hooks/useERC20Metadata";
+import useCurrency from "src/hooks/useCurrency";
 
 const useStyles = makeStyles((theme: Theme) => ({
     root: {
@@ -54,11 +54,8 @@ export const OpthyCard: FC<CardProps> = ({ data, calledFrom, buyableProp, liquid
     const classes = useStyles();
     const history = useHistory();
     const { provider } = useEthersState();
-    // console.log("viewContractAddress = ", viewContractAddress);
-    // const [balance, setBalance] = React.useState<string | undefined>()
-    // console.log("data = ", data);
-    const [swapperBuyLoading, setSwapperBuyLoading] = React.useState<boolean>(false);
 
+    const [swapperBuyLoading, setSwapperBuyLoading] = React.useState<boolean>(false);
 
     let opthyABI = OpthyABI(ChainId.RinkebyTestnet);
     // console.log("MyOpthys = ", MyOpthys);
@@ -80,13 +77,6 @@ export const OpthyCard: FC<CardProps> = ({ data, calledFrom, buyableProp, liquid
     delta -= minutes * 60;
     const seconds = delta % 60;
     result.expiration = days +' days ' + hours + 'h. ' + minutes + 'm. ' + seconds + 's.';
-
-    // User Balance
-    // provider.getBalance(userCurrentAddress)
-    // .then((result)=> {
-    //     setBalance(ethers.utils.formatEther(result))
-    // });
-    // result.currencyBalance = balance;
 
     // token0
     let token_0: any = {};
@@ -125,10 +115,10 @@ export const OpthyCard: FC<CardProps> = ({ data, calledFrom, buyableProp, liquid
     result.fixedSwapRate1 = Number(formatUnits(rT0, token_0.decimals)) / Number(formatUnits(rT1, token_1.decimals));
 
     // token0, token1, swapper currency convert
-    const convertToken0Cur = CURRENCY_CONVERT(result.token0.symbol);
-    const convertToken1Cur = CURRENCY_CONVERT(result.token1.symbol);
-    const convertSwapCur = CURRENCY_CONVERT(result.swapperDetails.symbol);
-    const convertLiquidityCur = CURRENCY_CONVERT(result.liquidityProviderDetails.symbol);
+    const convertToken0Cur = useCurrency(result.token0.symbol);
+    const convertToken1Cur = useCurrency(result.token1.symbol);
+    const convertSwapCur = useCurrency(result.swapperDetails.symbol);
+    const convertLiquidityCur = useCurrency(result.liquidityProviderDetails.symbol);
 
     const newCal = Number(formatUnits(balanceT0, token_0.decimals)) / Number(formatUnits(rT0, token_0.decimals));
     const newCal2 = Number(formatUnits(balanceT1, token_1.decimals)) / Number(formatUnits(rT1, token_1.decimals));
@@ -136,13 +126,9 @@ export const OpthyCard: FC<CardProps> = ({ data, calledFrom, buyableProp, liquid
     result.bar2 = (Number(newCal2) / (Number(newCal) + Number(newCal2))) * 100;
     // console.log("newCal = ", result.bar1, result.bar2);
 
-    // console.log("result = ", result);
-
     function isFloat(n: number){
         return Number(n) === n && n % 1 !== 0;
     }
-
-    const signer = provider.getSigner();
 
     const clickBuyContract = async (): Promise<void> => {
         if(buyableProp?.status === true){
@@ -150,8 +136,7 @@ export const OpthyCard: FC<CardProps> = ({ data, calledFrom, buyableProp, liquid
             if(Number(swapperAmount) > 0){
                 try {
                     setSwapperBuyLoading(true);
-                    // console.log("Yes Buyable", buyableProp, result.address, balanceT0, balanceT1, result.swapperDetails.token,result.swapperDetails.feeAmount);
-                    const contract = new ethers.Contract(result.address, opthyABI, signer);
+                    const contract = new ethers.Contract(result.address, opthyABI, provider.getSigner());
                     const txResponse: TransactionResponse = await contract.buySwapperRole(
                         balanceT0,
                         balanceT1,
@@ -163,7 +148,6 @@ export const OpthyCard: FC<CardProps> = ({ data, calledFrom, buyableProp, liquid
                     setSwapperBuy(true);
                     swapperFeeAmount = parseEther("0");
                     setSwapperBuyLoading(false);
-                    // await opthyMutate(opthys, true);
                     console.log("txReceipt = ", txReceipt)
                     console.log("txReceipt log = ", txReceipt.logs[0])
                 } catch (error: any) {
@@ -259,7 +243,7 @@ export const OpthyCard: FC<CardProps> = ({ data, calledFrom, buyableProp, liquid
                             </Paper>
                         </Grid>
                     </Grid>
-                    { Number(formatUnits(swapperFeeAmount, result.swapperDetails.decimals)) > 0 ? 
+                    { Number(formatUnits(swapperFeeAmount, result.swapperDetails.decimals)) > 0 &&
                     <>
                     <Divider/>
                     <Grid container spacing={2} mt={0}>
@@ -279,8 +263,8 @@ export const OpthyCard: FC<CardProps> = ({ data, calledFrom, buyableProp, liquid
                                 </Box>
                             </Paper>    
                         </Grid>
-                    </Grid></> : "" }
-                    { !liquidityBuy && Number(formatUnits(liquidityProviderFeeAmount, result.liquidityProviderDetails.decimals)) > 0 ? 
+                    </Grid></> }
+                    { !liquidityBuy && Number(formatUnits(liquidityProviderFeeAmount, result.liquidityProviderDetails.decimals)) > 0 && 
                     <>
                     <Divider/>
                     <Grid container spacing={2} mt={0}>
@@ -300,37 +284,32 @@ export const OpthyCard: FC<CardProps> = ({ data, calledFrom, buyableProp, liquid
                                 </Box>
                             </Paper>    
                         </Grid>
-                    </Grid></> : "" }
+                    </Grid></>}
                 </CardContent>
             {/* </CardActionArea> */}
             <CardActions>
                 <Grid container spacing={2} mt={0} justifyContent="center">
-                    { calledFrom === "home" ?
+                    { calledFrom === "home" &&
                         <Grid item>
                             <Link to={"buy-contract/" + result.address }>
                                 <Button size="medium" sx={{ m: 1 }} variant="contained" color="primary">View Offer</Button>
                             </Link>
-                        </Grid>: "" 
+                        </Grid>
                     }
-                    { calledFrom === "buyContract" ? 
+                    { calledFrom === "buyContract" && (
                         swapperBuy || liquidityBuy ?
                             <>
                                 <Button size="medium" sx={{ m: 1 }} variant="contained" color="primary">Swap</Button>
                                 <Button onClick={() => history.push('/')} size="medium" sx={{ m: 1 }} variant="contained" color="primary">Relist</Button>
                             </>
                         :
-                        Number(formatUnits(swapperFeeAmount, result.swapperDetails.decimals)) > 0 ?
+                        Number(formatUnits(swapperFeeAmount, result.swapperDetails.decimals)) > 0 &&
                         <Grid item>
                             {swapperBuyLoading ? <LoadingButton sx={{ m: 1 }} loading variant="outlined"> Submit </LoadingButton> : 
                             <Button onClick={clickBuyContract}  size="medium" sx={{ m: 1 }} variant="contained" color="primary">Buy</Button>
                             }
-                        </Grid> : "" 
-                        : ""
-                    }
-                    {/* { calledFrom === "contract" ?<>
-                    <Button size="medium" sx={{ m: 1 }} variant="contained" color="primary">Swap</Button>
-                    <Button size="medium" sx={{ m: 1 }} variant="contained" color="primary">Relist</Button></>
-                    : "" } */}
+                        </Grid>
+                    )}
                 </Grid>
                 
             </CardActions>
