@@ -34,7 +34,6 @@ const Home: FC = () => {
     // let { ethereum } = window;
     
     // console.log("userCurrentAddress = ",isMetamaskInstall, userCurrentAddress);
-    // const provider = new ethers.providers.Web3Provider(ethereum);
     // const signer = provider.getSigner();
 
     // let AllOpthys = OpthysView(ChainId.RinkebyTestnet);

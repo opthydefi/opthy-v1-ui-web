@@ -18,13 +18,10 @@ interface AppInitializeState {
     userTransactions: any[];
     isWalletConnected: boolean;
     provider: any;
-    viewContractAddress: string;
 }
 
 interface EthereumContextValue extends AppInitializeState {
-
     connectWallet: (user: any) => Promise<void>;
-    setViewContract: (address: string) => Promise<void>;
 }
 
 let { ethereum } = window;
@@ -35,15 +32,13 @@ const initialAppState: AppInitializeState = {
     userCurrentAddress: '',
     userTransactions: [],
     isWalletConnected: false,
-    provider: new ethers.providers.Web3Provider(ethereum),
-    viewContractAddress: '',
+    provider: new ethers.providers.Web3Provider(ethereum)
 };
 
 
 const EthereumContext = React.createContext<EthereumContextValue>({
     ...initialAppState,
     connectWallet: () => Promise.resolve(),
-    setViewContract: () => Promise.resolve(),
     // test: () => Promise.resolve(),
 });
 
@@ -87,14 +82,7 @@ type checkIsMetamaskInstall = {
     }
 }
 
-type SetViewContractAddress = {
-    type: "SET_VIEW_CONTRACT",
-    payload: {
-        address: string;
-    }
-}
-
-type Action = InitializeAction | ChangeMetamaskAddress | checkIsMetamaskInstall | ConnectWallet | InitializeProvider | SetViewContractAddress;
+type Action = InitializeAction | ChangeMetamaskAddress | checkIsMetamaskInstall | ConnectWallet | InitializeProvider;
 
 const stateReducer = (state: AppInitializeState, action: Action): AppInitializeState => {
     switch (action.type) {
@@ -125,13 +113,6 @@ const stateReducer = (state: AppInitializeState, action: Action): AppInitializeS
             return {
                 ...state,
                 provider: provider
-            }
-        }
-        case "SET_VIEW_CONTRACT": {
-            const { address } = action.payload;
-            return {
-                ...state,
-                viewContractAddress: address
             }
         }
         default: {
@@ -236,17 +217,6 @@ export const EthereumProvider: FC<EthereumProviderProps> = ({ children }) => {
 
 
 
-    const setViewContract = async (address: string) => {
-        dispatch({
-            type: "SET_VIEW_CONTRACT",
-            payload: {
-                address: address
-            }
-        })
-    }
-
-
-
     const connectWallet = async () => {
         try {
             if (!ethereum) return alert("Please install MetaMask.");
@@ -284,7 +254,6 @@ export const EthereumProvider: FC<EthereumProviderProps> = ({ children }) => {
         value={{
             ...state,
             connectWallet,
-            setViewContract,
         }}>
         {children}
     </EthereumContext.Provider>)

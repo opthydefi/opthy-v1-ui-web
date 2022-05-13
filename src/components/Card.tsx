@@ -21,7 +21,7 @@ import useSWR from 'swr';
 import { TransactionReceipt, TransactionResponse } from "@ethersproject/providers";
 import { LoadingButton } from "@mui/lab";
 
-declare let window:any
+// declare let window:any
 // const ERCMetaData = ERC20(ChainId.RinkebyTestnet);
 // console.log("ERCMetaData = ", ERCMetaData);
 
@@ -62,7 +62,7 @@ interface CardProps {
 export const OpthyCard: FC<CardProps> = ({ data, calledFrom, buyableProp, liquidityBuy, swapperBuy, setSwapperBuy }: CardProps) => {
     const classes = useStyles();
     const history = useHistory();
-    const { setViewContract, userCurrentAddress, viewContractAddress } = useEthersState();
+    const { provider } = useEthersState();
     // console.log("viewContractAddress = ", viewContractAddress);
     // const [balance, setBalance] = React.useState<string | undefined>()
     // console.log("data = ", data);
@@ -93,7 +93,6 @@ export const OpthyCard: FC<CardProps> = ({ data, calledFrom, buyableProp, liquid
     result.expiration = days +' days ' + hours + 'h. ' + minutes + 'm. ' + seconds + 's.';
 
     // User Balance
-    // const provider = new ethers.providers.Web3Provider(window.ethereum);
     // provider.getBalance(userCurrentAddress)
     // .then((result)=> {
     //     setBalance(ethers.utils.formatEther(result))
@@ -154,8 +153,6 @@ export const OpthyCard: FC<CardProps> = ({ data, calledFrom, buyableProp, liquid
         return Number(n) === n && n % 1 !== 0;
     }
 
-    let { ethereum } = window;
-    const provider = new ethers.providers.Web3Provider(ethereum);
     const signer = provider.getSigner();
 
     const clickBuyContract = async (): Promise<void> => {
@@ -320,7 +317,7 @@ export const OpthyCard: FC<CardProps> = ({ data, calledFrom, buyableProp, liquid
             <CardActions>
                 <Grid container spacing={2} mt={0} justifyContent="center">
                     { calledFrom === "home" ?
-                        <Grid item onClick={() => setViewContract(result.address)}>
+                        <Grid item>
                             <Link to={"buy-contract/" + result.address }>
                                 <Button size="medium" sx={{ m: 1 }} variant="contained" color="primary">View Offer</Button>
                             </Link>

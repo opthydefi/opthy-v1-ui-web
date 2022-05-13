@@ -1,35 +1,22 @@
 import React, { FC } from "react";
-// import { Link, useHistory, useLocation } from "react-router-dom";
 import Page from 'src/components/Page';
 import type { Theme } from 'src/types/theme';
-import { Grid, Box, Typography, CardActions, Container, FormControl, InputLabel, Select, MenuItem, Button, Paper } from '@mui/material';
+import { Grid, Box, Typography, Card, CardContent, CardActions, Button, Paper, Divider, List, ListItem, ListItemText } from '@mui/material';
 import { useEthersState } from 'src/contexts/EthereumContext';
-import Card from '@mui/material/Card';
-import CardContent from '@mui/material/CardContent';
 import { OpthyCard } from "src/components/Card";
 import { Buy } from "src/components/Buy";
 import { Swap } from "src/components/Swap";
 import makeStyles from '@mui/styles/makeStyles';
-import Divider from '@mui/material/Divider';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemText from '@mui/material/ListItemText';
 import { formatUnits, parseEther } from '@ethersproject/units';
-import { ChainId, ERC20, OpthyABI } from 'opthy-v1-core';
-import {ContractInterface, ethers} from "ethers";
+import { ChainId, OpthyABI } from 'opthy-v1-core';
+import { ethers } from "ethers";
 import { TransactionReceipt, TransactionResponse } from "@ethersproject/providers";
-// import { LogDescription } from "ethers/lib/utils";
-// import useSWR from 'swr';
 import moment from 'moment';
 import { LoadingButton } from "@mui/lab";
 // import { useERC20Metadata, CURRENCY_CONVERT } from "src/utils/helpers";
 import useSingleOpthy from "src/hooks/useSingleOpthy";
 import useTransactions from "src/hooks/useTransactions";
 
-declare let window:any
-
-// const { address, ABI } = ERC20(ChainId.RinkebyTestnet);
-// console.log("ERCMetaData = ", ABI, address);
 const opthyABI = OpthyABI(ChainId.RinkebyTestnet);
 
 
@@ -66,11 +53,8 @@ interface buyContract {
 
 const BuyContract: FC = (props: any) => {
     const viewContractAddress = props.match.params.address;
-    // const { viewContractAddress } = useEthersState();
+    const { provider } = useEthersState();
     const classes = useStyles();
-    let { ethereum } = window;
-    const provider = new ethers.providers.Web3Provider(ethereum);
-    const signer = provider.getSigner();
 
     const [liquidityBuyLoading, setLiquidityBuyLoading] = React.useState<boolean>(false);
     const [buyable, setBuyable] = React.useState<buyContract>({status: false, message: "Please approve before Buy."})
@@ -96,7 +80,7 @@ const BuyContract: FC = (props: any) => {
             if(Number(liquidityAmount) > 0){
                 try {
                     setLiquidityBuyLoading(true);
-                    const contract = new ethers.Contract(viewContractAddress, opthyABI, signer);
+                    const contract = new ethers.Contract(viewContractAddress, opthyABI, provider.getSigner());
                     const txResponse: TransactionResponse = await contract.buyLiquidityProviderRole(
                         singleOpthy[0].liquidityProviderFeeToken,
                         singleOpthy[0].liquidityProviderFeeAmount
@@ -151,7 +135,6 @@ const BuyContract: FC = (props: any) => {
     // React.useEffect(() => {
     //     if(!ethereum) return
     //     if(!userCurrentAddress) return
-    //     const provider = new ethers.providers.Web3Provider(ethereum)
     //     const erc20 = new ethers.Contract(opthyData.swapperDetails.token, ABI, provider);
     //     const approval = erc20.filters.Approval(userCurrentAddress, null);
     //     const opthyAddress = viewContractAddress;
@@ -172,7 +155,7 @@ const BuyContract: FC = (props: any) => {
     // React.useEffect(() => {
     //     buyLiquidityProviderCheck();
     //     async function buyLiquidityProviderCheck(){
-    //         const contract = new ethers.Contract(viewContractAddress, opthyABI, signer);
+    //         const contract = new ethers.Contract(viewContractAddress, opthyABI, provider.getSigner());
     //         console.log("opthyABI contract = ", contract, opthyABI);
     //         // const buyLPCheck = await contract.liquidityProvider();
     //         // if(userCurrentAddress == buyLPCheck){
@@ -187,7 +170,7 @@ const BuyContract: FC = (props: any) => {
     // React.useEffect(() => {
     //     buySwapperCheck();
     //     async function buySwapperCheck(){
-    //         const contract = new ethers.Contract(viewContractAddress, opthyABI, signer);
+    //         const contract = new ethers.Contract(viewContractAddress, opthyABI, provider.getSigner());
     //         const buySwapperChk = await contract.swapper();
     //         if(userCurrentAddress == buySwapperChk){
     //             console.log("Swapper buy true");
