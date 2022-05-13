@@ -27,7 +27,7 @@ export default function useSingleOpthy(address: string) {
     //     }
     // }, [address, isValidating, opthys])
 
-    const singleOpthy = !isValidating ? opthys?.filter((singleOpthy: { [x: string]: any; }) => singleOpthy.opthy === address) : "";
+    const singleOpthy = opthys?.filter((singleOpthy: { [x: string]: any; }) => singleOpthy.opthy === address);
     singleOpthy['token0Details'] = useERC20Metadata(singleOpthy[0]?.token0);
     singleOpthy['token1Details'] = useERC20Metadata(singleOpthy[0]?.token1);
     singleOpthy['swapperTokenDetails'] =  useERC20Metadata(singleOpthy[0]?.swapperFeeToken);
