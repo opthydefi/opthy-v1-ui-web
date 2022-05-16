@@ -40,7 +40,7 @@ export default function useTransactions (address: string) {
         }
 
         fetchTransactionLogs();
-    }, [address, data])
+    }, [address, data, provider])
 
     return transactionLogs;
 }

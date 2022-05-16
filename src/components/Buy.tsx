@@ -68,7 +68,7 @@ export const Buy: FC<BuyProps> = ({ contractAddress, data, buyable, setBuyable, 
     let swapperDetail: any = {};
     swapperDetail = useERC20Metadata(data?.swapperFeeToken);
 
-    const { allowanceData, isValidating } = useAllowance(data.swapperFeeToken, contractAddress)
+    const { allowanceData, isValidating } = useAllowance(data.swapperFeeToken, contractAddress);
 
     const [loading, setLoading] = React.useState<boolean>(false);
     const [liquidityLoading, setLiquidityLoading] = React.useState<boolean>(false);

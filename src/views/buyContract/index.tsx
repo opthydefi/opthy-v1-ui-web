@@ -249,14 +249,14 @@ const BuyContract: FC = (props: any) => {
                                     </Grid>
                                 </Grid>
                             </CardContent>
-                            { Number(formatUnits(singleOpthy?.liquidityProviderFeeAmount, lProviderDetail?.decimals)) &&
+                            { Number(formatUnits(singleOpthy?.liquidityProviderFeeAmount, lProviderDetail?.decimals)) > 0 &&
                             <CardActions>
                                 <Grid container spacing={2} mt={0} justifyContent="center">
                                     <Grid item>
                                         {liquidityBuyLoading ? 
                                             <LoadingButton sx={{ m: 1 }} loading variant="outlined"> Submit </LoadingButton> : 
-                                            !liquidityBuy ? 
-                                            <Button onClick={clickLiquidityBuyContract} size="medium" sx={{ m: 1 }} variant="contained" color="primary">Buy</Button> : ""
+                                            !liquidityBuy &&
+                                            <Button onClick={clickLiquidityBuyContract} size="medium" sx={{ m: 1 }} variant="contained" color="primary">Buy</Button>
                                         }
                                     </Grid>
                                 </Grid>
