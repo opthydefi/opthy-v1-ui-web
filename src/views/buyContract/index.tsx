@@ -53,7 +53,7 @@ interface buyContract {
 
 const BuyContract: FC = (props: any) => {
     const viewContractAddress = props.match.params.address;
-    const { provider } = useEthersState();
+    const { provider, userCurrentAddress } = useEthersState();
     const classes = useStyles();
 
     const [liquidityBuyLoading, setLiquidityBuyLoading] = React.useState<boolean>(false);
@@ -147,34 +147,35 @@ const BuyContract: FC = (props: any) => {
     //     return <Typography className={classes.loadingClass} gutterBottom variant="h5" component="div">Loading...</Typography>
     // }
 
-    // React.useEffect(() => {
-    //     buyLiquidityProviderCheck();
-    //     async function buyLiquidityProviderCheck(){
-    //         const contract = new ethers.Contract(viewContractAddress, opthyABI, provider.getSigner());
-    //         console.log("opthyABI contract = ", contract, opthyABI);
-    //         // const buyLPCheck = await contract.liquidityProvider();
-    //         // if(userCurrentAddress == buyLPCheck){
-    //         //     console.log("Liquidity Provider buy true");
-    //         // } else {
-    //         //     console.log("Liquidity Provider buy false");
-    //         // }
-    //         // console.log("buy Liquidity Provider check = ", userCurrentAddress + " || " + buyLPCheck);
-    //     }
-    // },[])
+    React.useEffect(() => {
+        buyLiquidityProviderCheck();
+        async function buyLiquidityProviderCheck(){
+            const contract = new ethers.Contract(viewContractAddress, opthyABI, provider.getSigner());
+            const buyLPCheck = await contract.liquidityProvider();
+            // console.log("Liquidity Check = ", buyLPCheck);
+            if(userCurrentAddress === buyLPCheck){
+                console.log("Liquidity Provider buy true");
+            } else {
+                console.log("Liquidity Provider buy false");
+            }
+            console.log("buy Liquidity Provider check: curAdd = ", userCurrentAddress + " || token = " + buyLPCheck);
+        }
+    },[provider, userCurrentAddress, viewContractAddress])
 
-    // React.useEffect(() => {
-    //     buySwapperCheck();
-    //     async function buySwapperCheck(){
-    //         const contract = new ethers.Contract(viewContractAddress, opthyABI, provider.getSigner());
-    //         const buySwapperChk = await contract.swapper();
-    //         if(userCurrentAddress == buySwapperChk){
-    //             console.log("Swapper buy true");
-    //         } else {
-    //             console.log("Swapper buy false");
-    //         }
-    //         console.log("buy Swapper Provider check = ", userCurrentAddress + " || " + buySwapperChk);
-    //     }
-    // },[])
+    React.useEffect(() => {
+        buySwapperCheck();
+        async function buySwapperCheck(){
+            const contract = new ethers.Contract(viewContractAddress, opthyABI, provider.getSigner());
+            const buySwapperChk = await contract.swapper();
+            // console.log("Swapper Check = ", buySwapperChk);
+            if(userCurrentAddress === buySwapperChk){
+                console.log("Swapper buy true");
+            } else {
+                console.log("Swapper buy false");
+            }
+            console.log("buy Swapper Provider check: curAdd = ", userCurrentAddress + " || token = " + buySwapperChk);
+        }
+    },[provider, userCurrentAddress, viewContractAddress])
     
     
     if(isValidating === true){
