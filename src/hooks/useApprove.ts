@@ -7,10 +7,12 @@ import useERC20Metadata from "./useERC20Metadata";
 import { formatUnits, parseEther } from "@ethersproject/units";
 import { ethers } from "ethers"; //ContractInterface
 import useKeepSWRDataLiveAsBlockArrive from './useKeepSWRDataLiveAsBlocksArrive';
+// import useContract from "./useContract";
 
 
 export default function useApprove(tokenAddress: string, tokenAmount: any, contractAddress: string, ) {
-
+    
+    // let contract = useContract(tokenAddress, ABI);
     const [needApprove, setNeedApprove] = React.useState<Boolean>(true);
     const { provider } = useEthersState();
     const tokenDetails = useERC20Metadata(tokenAddress);
