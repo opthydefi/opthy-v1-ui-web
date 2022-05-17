@@ -92,6 +92,7 @@ export const Swap: FC<SwapProps> = ({ data }: SwapProps) => {
 
     const convertToken0Cur = useCurrency(token_0?.symbol);
     const convertToken1Cur = useCurrency(token_1?.symbol);
+    
     provider.getBalance(userCurrentAddress)
     .then((result: ethers.BigNumberish)=> {
         setUserBalance(ethers.utils.formatEther(result))

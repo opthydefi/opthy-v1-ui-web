@@ -6,16 +6,10 @@ import { Box, Grid } from '@mui/material';
 import type { Theme } from 'src/types/theme';
 import makeStyles from '@mui/styles/makeStyles';
 import Divider from '@mui/material/Divider';
-import { formatUnits, parseEther } from '@ethersproject/units';  // parseUnits
-import { useEthersState } from 'src/contexts/EthereumContext';
-import { ethers } from "ethers";  // ContractInterface
-import { ChainId, ERC20 } from 'opthy-v1-core'; // OpthyABI
-import { TransactionReceipt, TransactionResponse } from "@ethersproject/providers";
+import { formatUnits } from '@ethersproject/units';  // parseUnits
 import { LoadingButton } from "@mui/lab";
 import useERC20Metadata from "src/hooks/useERC20Metadata";
-import useAllowance from "src/hooks/useAllowance";
-
-const { ABI } = ERC20(ChainId.RinkebyTestnet);
+import useApprove from "src/hooks/useApprove";
 
 const useStyles = makeStyles((theme: Theme) => ({
     root: {
@@ -60,7 +54,6 @@ interface BuyProps {
 
 export const Buy: FC<BuyProps> = ({ contractAddress, data, buyable, setBuyable, liquidityBuyable, setLiquidityBuyable }: BuyProps) => {
     const classes = useStyles();
-    const { provider } = useEthersState();
 
     let lProviderDetail: any = {};
     lProviderDetail = useERC20Metadata(data?.liquidityProviderFeeToken);
@@ -68,29 +61,40 @@ export const Buy: FC<BuyProps> = ({ contractAddress, data, buyable, setBuyable, 
     let swapperDetail: any = {};
     swapperDetail = useERC20Metadata(data?.swapperFeeToken);
 
-    const { allowanceData, isValidating } = useAllowance(data.swapperFeeToken, contractAddress);
+    
+    const { needApprove, isValidating, approveContract } = useApprove(data?.swapperFeeToken, data?.swapperFeeAmount, contractAddress);
+
+    const { needApprove: liquidityNeedApprove, isValidating: liquidityIsValidating, approveContract: liquidityApproveContract } = useApprove(data?.liquidityProviderFeeToken, data?.liquidityProviderFeeAmount, contractAddress);
 
     const [loading, setLoading] = React.useState<boolean>(false);
     const [liquidityLoading, setLiquidityLoading] = React.useState<boolean>(false);
 
+    React.useEffect(() => {
+        if(isValidating === false){
+            if(needApprove === false){
+                setBuyable({ status: true, message: "" });
+            }
+        }
+    }, [isValidating, needApprove, setBuyable]);
+
+    React.useEffect(() => {
+        if(liquidityIsValidating === false){
+            if(liquidityNeedApprove === false){
+                setLiquidityBuyable({ status: true, message: "" });
+            }
+        }
+    }, [liquidityIsValidating, liquidityNeedApprove, setLiquidityBuyable]);
+
+
     const clickApprove = async (role: string): Promise<void> => {
         try {
-            // const iface:ContractInterface = new ethers.utils.Interface(ABI)
             if(role === "swapper"){
                 if(buyable?.status === false){
                     setLoading(true);
-                    const contract = new ethers.Contract(data?.swapperFeeToken, ABI, provider.getSigner());
-                    const txResponse: TransactionResponse = await contract.approve(
-                        contractAddress,
-                        parseEther("1000000000000")
-                    );
-                    console.log("Swapper approve transaction = ", txResponse);
-                    const txReceipt: TransactionReceipt = await txResponse.wait();
-                    setLoading(false);
-                    console.log("txReceipt = ", txReceipt)
-                    console.log("txReceipt log = ", txReceipt.logs[0])
-                    // const event: LogDescription = iface.parseLog(txReceipt.logs[0])
-                    // console.log("event = ", event)
+                    const approveResponse = await approveContract();
+                    if(approveResponse){
+                        setLoading(false);
+                    }
                 } else {
                     alert("Already aprroved. Please Buy")
                 }
@@ -98,53 +102,21 @@ export const Buy: FC<BuyProps> = ({ contractAddress, data, buyable, setBuyable, 
             if(role === "liquidity"){
                 if(liquidityBuyable?.status === false){
                     setLiquidityLoading(true);
-                    const contract = new ethers.Contract(data?.liquidityProviderFeeToken, ABI, provider.getSigner());
-                    const txResponse: TransactionResponse = await contract.approve(
-                        contractAddress,
-                        parseEther("1000000000000")
-                    );
-                    console.log("Liquidity approve transaction = ", txResponse);
-                    const txReceipt: TransactionReceipt = await txResponse.wait();
-                    setLiquidityLoading(false);
-                    console.log("txReceipt = ", txReceipt)
-                    console.log("txReceipt log = ", txReceipt.logs[0])
-                    // const event: LogDescription = iface.parseLog(txReceipt.logs[0])
-                    // console.log("event = ", event)
+                    const approveResponse = await liquidityApproveContract();
+                    if(approveResponse){
+                        setLiquidityLoading(false);
+                    }
                 } else {
                     alert("Already aprroved liquidity provider role. Please Buy")
                 }
             }
         } catch (error: any) {
-            alert(error.message);
             console.error(error);
         }
         
     }
-    
-    React.useEffect(() => {
-        if(isValidating === false){
-            const swapperAmount = Number(formatUnits(data?.swapperFeeAmount, swapperDetail?.decimals));
-            const liquidityAmount = Number(formatUnits(data?.liquidityProviderFeeAmount, lProviderDetail?.decimals));
-            if(swapperAmount > 0) {
-                const allownaceAmount = Number(formatUnits(allowanceData, swapperDetail?.decimals));
-                if(allownaceAmount > 0){
-                    if(allownaceAmount > swapperAmount){
-                        setBuyable({status: true, message: ""});
-                    }
-                }
-            }
-            if(liquidityAmount > 0) {
-                const allownaceAmount = Number(formatUnits(allowanceData, lProviderDetail?.decimals));
-                if(allownaceAmount > 0){
-                    if(allownaceAmount > liquidityAmount){
-                        setLiquidityBuyable({status: true, message: ""});
-                    }
-                }
-            }
-        }
-    }, [isValidating]);
 
-    if(isValidating === true){
+    if(isValidating === true || liquidityIsValidating === true){
         return <Typography className={classes.loadingClass} gutterBottom variant="h5" component="div">Loading...</Typography>
     }
     return (
