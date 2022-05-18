@@ -145,7 +145,7 @@ export const EthereumProvider: FC<EthereumProviderProps> = ({ children }) => {
 
     React.useEffect(() => {
         if (state.isInitialized === true) {
-            console.log("app initialize");
+            // console.log("app initialize");
             if (!ethereum) {
                 dispatch({
                     type: "CHECK_METAMASK_INSTALL",
@@ -200,7 +200,7 @@ export const EthereumProvider: FC<EthereumProviderProps> = ({ children }) => {
         /* on connect*/
         if (ethereum) {
             const connectEthereum = (e: any) => {
-                console.log("what is e", e)
+                // console.log("what is e", e)
             }
             ethereum.on('connect', connectEthereum)
         }
