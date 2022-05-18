@@ -16,7 +16,6 @@ import makeStyles from '@mui/styles/makeStyles';
 
 
 const useStyles = makeStyles((theme: Theme) => {
-  console.log(theme, 'theme');
   return {
     root: {
       backgroundColor: theme.palette.background.paper,

@@ -1,9 +1,9 @@
 import React from 'react';
 import type { FC } from 'react';
-import { Link as RouterLink, useHistory } from 'react-router-dom';
+import { Link as RouterLink } from 'react-router-dom'; // useHistory
 import clsx from 'clsx';
 import PropTypes from 'prop-types';
-import { AppBar, Grid, Box, Button, Divider, Toolbar, Hidden, Typography, Link, Container } from '@mui/material';
+import { AppBar, Box, Button, Toolbar, Typography, Link, Container } from '@mui/material';
 import makeStyles from '@mui/styles/makeStyles';
 import Logo from '../../images/bi_graph-up.svg';
 import type { Theme } from "src/types/theme";
@@ -55,22 +55,22 @@ const useStyles = makeStyles((theme: Theme) => ({
 const TopBar: FC<TopBarProps> = ({ className, ...rest }) => {
   const classes = useStyles();
   const { connectWallet, userCurrentAddress, isMetamaskInstall } = useEthersState();
-  console.log("loggedIN userCurrentAddress = ",isMetamaskInstall, userCurrentAddress);
+  // console.log("loggedIN userCurrentAddress = ",isMetamaskInstall, userCurrentAddress);
 
-  let history = useHistory();
-  const [openRegisterButton, setOpenRegisterButton] = React.useState(false);
-  const handleClickOpenRegister = () => {
-    setOpenRegisterButton(true);
-  };
-  const handleCloseRegister = () => {
-    setOpenRegisterButton(false);
-  };
+  // let history = useHistory();
+  // const [openRegisterButton, setOpenRegisterButton] = React.useState(false);
+  // const handleClickOpenRegister = () => {
+  //   setOpenRegisterButton(true);
+  // };
+  // const handleCloseRegister = () => {
+  //   setOpenRegisterButton(false);
+  // };
 
-  const goToRegister = (user_type = "") => {
-    if (user_type) {
-      history.push(`register/${user_type}`);
-    }
-  };
+  // const goToRegister = (user_type = "") => {
+  //   if (user_type) {
+  //     history.push(`register/${user_type}`);
+  //   }
+  // };
 
 
   return (
@@ -82,7 +82,7 @@ const TopBar: FC<TopBarProps> = ({ className, ...rest }) => {
       <Container className={classes.customContainer}>
         <Toolbar className={classes.toolbar}>
           <RouterLink to="/">
-          <img src={Logo}/>
+          <img src={Logo} alt="logo" />
             <Typography sx={{display: 'inline-block'}}> Opthy</Typography>
           </RouterLink>
           <Box flexGrow={1} />

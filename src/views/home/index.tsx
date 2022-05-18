@@ -8,7 +8,7 @@ import makeStyles from '@mui/styles/makeStyles';
 // import useSWR from 'swr';
 // import { ethers } from 'ethers';
 // import { name2ABI } from "src/utils/helpers";
-// import { ChainId, ERC20, OpthyABI, Opthys, OpthysView } from 'opthy-v1-core';
+import { ChainId, ERC20, OpthyABI, Opthys, OpthysView } from 'opthy-v1-core';
 // import { TransactionReceipt, TransactionResponse } from "@ethersproject/providers";
 import useOpthys from "src/hooks/useOpthys";
 // import { OPTHY_NETWORKS } from "src/utils/constants";
@@ -42,9 +42,11 @@ const Home: FC = () => {
     // let OnlyOpthys = Opthys(ChainId.RinkebyTestnet);
     // console.log("OnlyOpthys = ", OnlyOpthys);
 
-    // let MyOpthys = OpthyABI(ChainId.RinkebyTestnet);
-    // console.log("MyOpthys = ", MyOpthys);
+    let MyOpthys = OpthyABI(ChainId.RinkebyTestnet);
+    console.log("MyOpthys = ", MyOpthys);
 
+    // const { ABI } = ERC20(ChainId.RinkebyTestnet);
+    // console.log("ABI = ", ABI);
     
     // console.log("oData = ", opthys);
     

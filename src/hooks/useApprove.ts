@@ -6,18 +6,15 @@ import { TransactionReceipt, TransactionResponse } from "@ethersproject/provider
 import useERC20Metadata from "./useERC20Metadata";
 import { formatUnits, parseEther } from "@ethersproject/units";
 import { ethers } from "ethers"; //ContractInterface
-import useKeepSWRDataLiveAsBlockArrive from './useKeepSWRDataLiveAsBlocksArrive';
-// import useContract from "./useContract";
 
 
 export default function useApprove(tokenAddress: string, tokenAmount: any, contractAddress: string, ) {
     
-    // let contract = useContract(tokenAddress, ABI);
     const [needApprove, setNeedApprove] = React.useState<Boolean>(true);
     const { provider } = useEthersState();
     const tokenDetails = useERC20Metadata(tokenAddress);
 
-    const { allowanceData, mutate, isValidating } = useAllowance(tokenAddress, contractAddress);
+    const { allowanceData, isValidating } = useAllowance(tokenAddress, contractAddress);
     
     React.useEffect(() => {
         if(!isValidating){
@@ -55,8 +52,6 @@ export default function useApprove(tokenAddress: string, tokenAmount: any, contr
             return null;
         }
     }
-
-    useKeepSWRDataLiveAsBlockArrive(mutate);
     
     return { allowanceData, isValidating, needApprove, approveContract: contractApprove };
 }

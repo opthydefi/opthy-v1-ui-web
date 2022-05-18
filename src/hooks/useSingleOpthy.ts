@@ -1,12 +1,18 @@
+import { useMemo } from "react";
 import useOpthys from './useOpthys';
-import useKeepSWRDataLiveAsBlockArrive from './useKeepSWRDataLiveAsBlocksArrive';
 
 export default function useSingleOpthy(address: string) {
-    const { opthys, mutate, isValidating } = useOpthys();
+    const { opthys, isValidating } = useOpthys();
 
     const singleOpthy = opthys?.filter((singleOpthy: { [x: string]: any; }) => singleOpthy.opthy === address);
+    
+    const singleOpthyData = opthys ? singleOpthy[0] : null;
 
-    useKeepSWRDataLiveAsBlockArrive(mutate);
+    return useMemo(() => {
 
-    return { singleOpthy: opthys ? singleOpthy[0] : null, isValidating };
+        return { singleOpthy: singleOpthyData, isValidating };
+
+    }, [address, singleOpthyData]);
+
+    // return { singleOpthy: opthys ? singleOpthy[0] : null, isValidating };
 }

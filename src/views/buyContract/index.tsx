@@ -152,13 +152,9 @@ const BuyContract: FC = (props: any) => {
         async function buyLiquidityProviderCheck(){
             const contract = new ethers.Contract(viewContractAddress, opthyABI, provider.getSigner());
             const buyLPCheck = await contract.liquidityProvider();
-            // console.log("Liquidity Check = ", buyLPCheck);
-            if(userCurrentAddress === buyLPCheck){
-                console.log("Liquidity Provider buy true");
-            } else {
-                console.log("Liquidity Provider buy false");
+            if(userCurrentAddress.toLowerCase() === buyLPCheck.toLowerCase()){
+                setLiquidityBuy(true);
             }
-            console.log("buy Liquidity Provider check: curAdd = ", userCurrentAddress + " || token = " + buyLPCheck);
         }
     },[provider, userCurrentAddress, viewContractAddress])
 
@@ -167,13 +163,9 @@ const BuyContract: FC = (props: any) => {
         async function buySwapperCheck(){
             const contract = new ethers.Contract(viewContractAddress, opthyABI, provider.getSigner());
             const buySwapperChk = await contract.swapper();
-            // console.log("Swapper Check = ", buySwapperChk);
-            if(userCurrentAddress === buySwapperChk){
-                console.log("Swapper buy true");
-            } else {
-                console.log("Swapper buy false");
+            if(userCurrentAddress.toLowerCase() === buySwapperChk.toLowerCase()){
+                setSwapperBuy(true);
             }
-            console.log("buy Swapper Provider check: curAdd = ", userCurrentAddress + " || token = " + buySwapperChk);
         }
     },[provider, userCurrentAddress, viewContractAddress])
     
