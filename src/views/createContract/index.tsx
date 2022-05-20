@@ -38,33 +38,29 @@ const useStyles = makeStyles((theme: Theme) => ({
 
 const CreateContract: FC = () => {
     const classes = useStyles();
-    const [dai, setDai] = React.useState('');
-    const [open, setOpen] = React.useState(false);
+    const tokens = [{ address: "0x7Af456bf0065aADAB2E6BEc6DaD3731899550b84", symbol: "DAI" }, { address: "0xc778417E063141139Fce010982780140Aa0cD5Ab", symbol: "WETH" }];
+    const [tokenZero, setTokenZero] = React.useState('');
+    const [tokenOne, setTokenOne] = React.useState('');
+    const [openZero, setOpenZero] = React.useState(false);
+    const [openOne, setOpenOne] = React.useState(false);
     const [values, setValues] = React.useState({
         weight: '',
     });
-
-    const [selectedValue, setSelectedValue] = React.useState('a');
-
-    const handleChange5 = (event: { target: { value: React.SetStateAction<string>; }; }) => {
-      setSelectedValue(event.target.value);
-    };
 
     const handleChange2 = (prop: string) => (event: { target: { value: any; }; }) => {
         setValues({ ...values, [prop]: event.target.value });
     };
 
-    const handleChange = (event: { target: { value: React.SetStateAction<string> } }) => {
-        setDai(event.target.value);
+    const liquidityHandleChange = (event: { target: { value: React.SetStateAction<string> } }) => {
+        setTokenZero(event.target.value);
+        setTokenOne(event.target.value === tokens[0].address ? tokens[1].address : tokens[0].address );
     };
 
-    const handleClose = () => {
-        setOpen(false);
+    const swappableHandleChange = (event: { target: { value: React.SetStateAction<string> } }) => {
+        setTokenOne(event.target.value);
+        setTokenZero(event.target.value === tokens[0].address ? tokens[1].address : tokens[0].address );
     };
 
-    const handleOpen = () => {
-        setOpen(true);
-    };
     return (
         <Page title="Create Contract">
             <Box m={2} mt={10}>
@@ -95,39 +91,39 @@ const CreateContract: FC = () => {
                         </Grid>
 
                         <Grid item xs={12} md={6}>
-                            
-                            
-                            
                             <Typography m={1}> Liquidity Provider </Typography>
                             <FormControl sx={{ m: 1, width: '50ch' }}>
-                                <InputLabel id="chrage-label">BTC</InputLabel>
+                                <InputLabel id="chrage-label">Select LP</InputLabel>
                                 <Select
                                     labelId="chrage-label"
                                     id="chrage"
-                                    open={open}
-                                    onClose={handleClose}
-                                    onOpen={handleOpen}
-                                    value={dai}
+                                    open={openZero}
+                                    onClose={() => setOpenZero(false)}
+                                    onOpen={() => setOpenZero(true)}
+                                    value={tokenZero}
                                     label="DAI"
-                                    onChange={handleChange}
+                                    onChange={liquidityHandleChange}
                                 >
                                     <MenuItem value="">
                                         <em>None</em>
                                     </MenuItem>
-                                    <MenuItem value={10}>DAI</MenuItem>
+                                    { tokens.map((getToken, index) => 
+                                        <MenuItem value={getToken.address} key={index}>{getToken.symbol}</MenuItem>
+                                    )}
+                                    
                                 </Select>
                             </FormControl>
                             <Box m={1} mt={6}>
                                 <Typography style={{ display: 'inline-block' }}> Fixed Swap Rate </Typography>
                                 <Typography style={{ display: 'inline-block', marginLeft: '43%', marginBottom: "0px" }} gutterBottom variant="body2" color="text.secondary">Toggle Order</Typography>
-                                <Typography style={{ display: 'inline-block', marginLeft: '61%' }} variant="caption" color="text.secondary">1 BTC = 60K DAI</Typography>
+                                <Typography style={{ display: 'inline-block', marginLeft: '61%' }} variant="caption" color="text.secondary">{tokenOne && "1 " + tokens.filter(val => val.address === tokenOne)[0].symbol + " = "} {tokenZero && "60K " + tokens.filter(val => val.address === tokenZero)[0].symbol}</Typography>
                             </Box>
                             <FormControl sx={{ m: 1, width: '50ch' }} variant="outlined">
                                 <OutlinedInput
                                     id="outlined-adornment-weight"
                                     value={values.weight}
                                     onChange={handleChange2('weight')}
-                                    endAdornment={<InputAdornment position="end">BTC = 1DAI</InputAdornment>}
+                                    endAdornment={<InputAdornment position="end">{tokenZero && tokens.filter(val => val.address === tokenZero)[0].symbol + " = 1"} {tokenOne && tokens.filter(val => val.address === tokenOne)[0].symbol}</InputAdornment>}
                                     aria-describedby="outlined-weight-helper-text"
                                     inputProps={{
                                         'aria-label': 'weight',
@@ -139,21 +135,23 @@ const CreateContract: FC = () => {
                           
                             <Typography m={1}> Swappable Asset </Typography>
                             <FormControl sx={{ m: 1, width: '53ch' }}>
-                                <InputLabel id="demo-controlled-open-select-label">DAI</InputLabel>
+                                <InputLabel id="demo-controlled-open-select-label">Select SA</InputLabel>
                                 <Select
                                     labelId="demo-controlled-open-select-label"
                                     id="demo-controlled-open-select"
-                                    open={open}
-                                    onClose={handleClose}
-                                    onOpen={handleOpen}
-                                    value={dai}
+                                    open={openOne}
+                                    onClose={() => setOpenOne(false)}
+                                    onOpen={() => setOpenOne(true)}
+                                    value={tokenOne}
                                     label="DAI"
-                                    onChange={handleChange}
+                                    onChange={swappableHandleChange}
                                 >
                                     <MenuItem value="">
                                         <em>None</em>
                                     </MenuItem>
-                                    <MenuItem value={10}>DAI</MenuItem>
+                                    { tokens.map((getToken, index) => 
+                                        <MenuItem value={getToken.address} key={index}>{getToken.symbol}</MenuItem>
+                                    )}
                                 </Select>
                             </FormControl>
                             <Typography m={1} mt={6}> Duration </Typography>

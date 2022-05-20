@@ -9,14 +9,14 @@ import type { Theme } from 'src/types/theme';
 import makeStyles from '@mui/styles/makeStyles';
 import { useEthersState } from 'src/contexts/EthereumContext';
 // import { ethers } from "ethers"; // ContractInterface
-import { formatUnits } from '@ethersproject/units'; // parseEther, parseUnits
+import { formatUnits, parseUnits } from '@ethersproject/units'; // parseEther, parseUnits
 import useERC20Metadata from "src/hooks/useERC20Metadata";
 import useCurrency from "src/hooks/useCurrency";
 import useTokenBalance from "src/hooks/useTokenBalance";
 import { ChainId, OpthyABI } from 'opthy-v1-core';
 import useContract from "src/hooks/useContract";
 import { TransactionReceipt, TransactionResponse } from "@ethersproject/providers";
-import { Contract } from "ethers";
+import { BigNumber, Contract } from "ethers";
 import { LoadingButton } from "@mui/lab";
 // import Swal from 'sweetalert2';
 
@@ -168,17 +168,18 @@ export const Swap: FC<SwapProps> = ({ data }: SwapProps) => {
                 //         Swal.showLoading()
                 //     }
                 // });
-                let inAmountT0_: number = 0;
-                let inAmountT1_: number = 0;
-                let outAmountT0_: number = 0;
-                let outAmountT1_: number = 0;
+                const zeroBigNumber = BigNumber.from(0);
+                let inAmountT0_: BigNumber = zeroBigNumber;
+                let inAmountT1_: BigNumber = zeroBigNumber;
+                let outAmountT0_: BigNumber = zeroBigNumber;
+                let outAmountT1_: BigNumber = zeroBigNumber;
                 if(selectedToken === 'token0'){
-                    inAmountT0_ = inputValue;
-                    outAmountT1_ = Number(formatUnits(data?.balanceT1, token_0?.decimals))
+                    inAmountT0_ = parseUnits(inputValue.toString(), token_0?.decimals);
+                    outAmountT1_ = data?.balanceT1
                 }
                 if(selectedToken === 'token1'){
-                    inAmountT1_ = inputValue;
-                    outAmountT0_ = Number(formatUnits(data?.balanceT0, token_0?.decimals))
+                    inAmountT1_ = parseUnits(inputValue.toString(), token_1?.decimals);
+                    outAmountT0_ = data?.balanceT0
                 }
                 // console.log("swap click = ", data.opthy, inAmountT0_, inAmountT1_, outAmountT0_, outAmountT1_);
                 try {
