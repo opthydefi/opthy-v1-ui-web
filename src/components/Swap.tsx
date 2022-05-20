@@ -18,6 +18,7 @@ import useContract from "src/hooks/useContract";
 import { TransactionReceipt, TransactionResponse } from "@ethersproject/providers";
 import { Contract } from "ethers";
 import { LoadingButton } from "@mui/lab";
+// import Swal from 'sweetalert2';
 
 const useStyles = makeStyles((theme: Theme) => ({
     root: {
@@ -50,6 +51,18 @@ const useStyles = makeStyles((theme: Theme) => ({
         textAlign: 'center'
     }
 }));
+
+// const Toast = Swal.mixin({
+//     toast: true,
+//     position: 'top-end',
+//     showConfirmButton: false,
+//     timer: 3000,
+//     // timerProgressBar: true,
+//     didOpen: (toast) => {
+//       toast.addEventListener('mouseenter', Swal.stopTimer)
+//       toast.addEventListener('mouseleave', Swal.resumeTimer)
+//     }
+// });
 
 interface SwapProps {
     data: any;
@@ -146,6 +159,15 @@ export const Swap: FC<SwapProps> = ({ data }: SwapProps) => {
 
             if(!error) {
                 setLoading(true);
+                // Swal.fire({
+                //     title: 'Please wait..',
+                //     // html: 'Loading...',
+                //     allowOutsideClick: false,
+                //     customClass: 'swal-wide',
+                //     didOpen: () => {
+                //         Swal.showLoading()
+                //     }
+                // });
                 let inAmountT0_: number = 0;
                 let inAmountT1_: number = 0;
                 let outAmountT0_: number = 0;
@@ -168,15 +190,23 @@ export const Swap: FC<SwapProps> = ({ data }: SwapProps) => {
                     console.log("Swap txReceipt = ", txReceipt)
                     console.log("Swap txReceipt log = ", txReceipt.logs[0])
                     setLoading(false);
-                } catch (error) {
+                    // Swal.close();
+                    alert("Contract Swaped Successfully");
+                    // Toast.fire({ icon: 'success', title: 'Contract Swaped Successfully' });
+                } catch (error: any) {
                     console.error(error);
                     setLoading(false);
+                    alert(error.message);
+                    // Swal.close();
+                    // Toast.fire({ icon: 'error', title: error.message });
                 }
             } else {
                 alert(errorMessage);
+                // Toast.fire({ icon: 'error', title: errorMessage });
             }
         } else {
-            alert("Sorry! Please Choose Token");
+            alert("Sorry! Please Choose Token Or Enter Swap value.");
+            // Toast.fire({ icon: 'error', title: "Sorry! Please Choose Token Or Enter Swap value." });
         }
     }
 

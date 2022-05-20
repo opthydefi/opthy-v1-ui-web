@@ -105,15 +105,15 @@ const TopBar: FC<TopBarProps> = ({ className, ...rest }) => {
 
         </Toolbar>
         <Box className={classes.customMenu}>
-          <Link href="#" underline="none">
+          <RouterLink to="" style={{textDecoration: 'none'}}>
             Buy Contracts
-          </Link>
+          </RouterLink>
           <Link href="#" underline="none">
             Sell Contracts
           </Link>
-          <Link href="#" underline="none">
+          <RouterLink to="create-contract">
             Create Contract
-          </Link>
+          </RouterLink>
           <Link href="#" underline="none">
             Edit Buy Contract Offers
           </Link>
