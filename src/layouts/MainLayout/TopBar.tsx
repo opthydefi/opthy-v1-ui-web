@@ -111,6 +111,9 @@ const TopBar: FC<TopBarProps> = ({ className, ...rest }) => {
           <Link href="#" underline="none">
             Sell Contracts
           </Link>
+          {/* <Link href="/create-contract" underline="none">
+          Create Contract
+          </Link> */}
           <RouterLink to="create-contract">
             Create Contract
           </RouterLink>
