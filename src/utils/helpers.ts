@@ -6,7 +6,7 @@ import useSWRImmutable from 'swr/immutable';
 import { ChainId, ERC20 } from 'opthy-v1-core';
 // import { useWeb3React } from '@web3-react/core';
 // import { AddressTranslator } from 'nervos-godwoken-integration';
-import { getAddress } from '@ethersproject/address';
+// import { getAddress } from '@ethersproject/address';
 import useSWR from 'swr';
 // import { opthysAddress, chainNameIDs, contract2ABI } from "opthy-v1-core";
 
